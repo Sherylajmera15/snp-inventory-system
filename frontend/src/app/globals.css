@@ -1,0 +1,140 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: #faf5f1;
+  --foreground: #292f36;
+}
+
+body {
+  color: var(--foreground);
+  background: var(--background);
+}
+
+/* Prevent mouse-wheel from changing number input values */
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+input[type="number"] {
+  -moz-appearance: textfield;
+}
+
+/* ─── Dark mode overrides ──────────────────────────────────────────────────── */
+
+.dark {
+  --background: #0f172a;
+  --foreground: #f1f5f9;
+}
+
+.dark body,
+.dark .bg-cream {
+  background-color: #0f172a !important;
+}
+
+.dark .bg-white {
+  background-color: #1e293b !important;
+}
+
+.dark .text-charcoal {
+  color: #f1f5f9 !important;
+}
+
+.dark .text-taupe {
+  color: #94a3b8 !important;
+}
+
+.dark .border-sand {
+  border-color: #334155 !important;
+}
+
+.dark .bg-cream\/40,
+.dark .bg-cream\/30,
+.dark .bg-cream\/60 {
+  background-color: rgba(30, 41, 59, 0.5) !important;
+}
+
+.dark .hover\:bg-cream:hover {
+  background-color: #1e293b !important;
+}
+
+.dark .hover\:bg-cream\/60:hover {
+  background-color: rgba(30, 41, 59, 0.6) !important;
+}
+
+.dark .hover\:bg-cream\/40:hover {
+  background-color: rgba(30, 41, 59, 0.4) !important;
+}
+
+.dark input,
+.dark select,
+.dark textarea {
+  background-color: #1e293b !important;
+  color: #f1f5f9 !important;
+  border-color: #334155 !important;
+}
+
+.dark input::placeholder,
+.dark textarea::placeholder {
+  color: #64748b !important;
+}
+
+.dark select option {
+  background-color: #1e293b;
+  color: #f1f5f9;
+}
+
+.dark .bg-rust\/10 {
+  background-color: rgba(164, 31, 19, 0.2) !important;
+}
+
+.dark header,
+.dark .border-b {
+  border-color: #334155 !important;
+}
+
+.dark .shadow-md,
+.dark .shadow-xl,
+.dark .shadow-sm {
+  box-shadow: 0 4px 24px rgba(0,0,0,0.4) !important;
+}
+
+.dark .bg-sand {
+  background-color: #334155 !important;
+}
+
+.dark .text-rust {
+  color: #f87171 !important;
+}
+
+.dark .border-rust {
+  border-color: #f87171 !important;
+}
+
+.dark .focus\:ring-rust\/30:focus {
+  --tw-ring-color: rgba(248, 113, 113, 0.3) !important;
+}
+
+.dark .focus\:border-rust:focus {
+  border-color: #f87171 !important;
+}
+
+/* Table rows in dark mode */
+.dark tr:hover {
+  background-color: rgba(30, 41, 59, 0.7) !important;
+}
+
+.dark .rounded-2xl.bg-white,
+.dark .rounded-xl.bg-white {
+  background-color: #1e293b !important;
+}
+
+/* Accent chips */
+.dark .bg-green-100 {
+  background-color: rgba(22, 101, 52, 0.3) !important;
+}
+.dark .text-green-700 {
+  color: #4ade80 !important;
+}
