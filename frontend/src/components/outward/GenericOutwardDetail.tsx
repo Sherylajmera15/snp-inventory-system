@@ -125,8 +125,8 @@ export default function GenericOutwardDetailPage({ config }: { config: OutwardMo
       });
       setEntry({ ...entry, ...res.data });
       setEditMode(false);
-    } catch (e: any) {
-      setSaveError(e.response?.data?.detail ?? "Failed to save changes.");
+    } catch (e: unknown) {
+      setSaveError((e as { response?: { data?: { detail?: string } } }).response?.data?.detail ?? "Failed to save changes.");
     } finally {
       setSaving(false);
     }
@@ -148,7 +148,7 @@ export default function GenericOutwardDetailPage({ config }: { config: OutwardMo
     entry.outward_time ? String(entry.outward_time).slice(0, 5) : null
   );
   const canEdit = user.role === "admin" || (
-    (entry as any).created_by_id === user.id && within24
+    entry.created_by_id === user.id && within24
   );
 
   return (
@@ -247,7 +247,7 @@ export default function GenericOutwardDetailPage({ config }: { config: OutwardMo
               </div>
               <div className="bg-cream rounded-xl px-3 py-2.5">
                 <p className="text-xs text-taupe">Created By</p>
-                <p className="text-sm font-semibold text-charcoal">{(entry as any).created_by_name || "—"}</p>
+                <p className="text-sm font-semibold text-charcoal">{entry.created_by_name || "—"}</p>
               </div>
               <div className="bg-cream rounded-xl px-3 py-2.5">
                 <p className="text-xs text-taupe">Total Items</p>

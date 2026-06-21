@@ -208,8 +208,8 @@ export default function CTPOutwardNewPage() {
       } else {
         router.push("/ctp-outward");
       }
-    } catch (e: any) {
-      setSubmitError(e.response?.data?.detail ?? "An error occurred. Please try again.");
+    } catch (e: unknown) {
+      setSubmitError((e as { response?: { data?: { detail?: string } } }).response?.data?.detail ?? "An error occurred. Please try again.");
     } finally {
       setSubmitting(false);
     }

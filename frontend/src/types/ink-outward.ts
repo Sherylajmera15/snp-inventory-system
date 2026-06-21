@@ -54,6 +54,8 @@ export interface InkOutwardDetail {
   created_at: string | null;
   items: InkOutwardItem[];
   adjustments: InkAdjEntry[];
+  created_by_id?: number | null;
+  created_by_name?: string | null;
 }
 
 export interface InkOutwardListItem {

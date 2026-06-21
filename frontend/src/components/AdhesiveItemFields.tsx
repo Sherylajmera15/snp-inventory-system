@@ -12,7 +12,6 @@ import QuantityGroupSection, {
   QuantityGroupRow,
   emptyQuantityGroup,
   effectiveUnit,
-  groupQuantityFor,
   quantityGroupRowFromOut,
 } from "./QuantityGroupSection";
 import { Trash2 } from "lucide-react";

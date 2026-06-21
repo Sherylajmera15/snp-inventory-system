@@ -10,7 +10,7 @@ function fmtDate(d: string) {
   if (!d) return "";
   try { return new Date(d).toLocaleDateString("en-GB"); } catch { return d; }
 }
-function fmtTime(t: string) { return t ? String(t).slice(0, 5) : ""; }
+function fmtTime(t: string | null | undefined) { return t ? String(t).slice(0, 5) : ""; }
 function fmtNum(v: number | null | undefined, decimals = 2) {
   if (v === null || v === undefined) return "";
   return Number(v).toFixed(decimals);
@@ -96,9 +96,145 @@ function buildExcel(moduleTitle: string, rangeLabel: string, rows: Record<string
   XLSX.writeFile(wb, fname);
 }
 
+// ─── Minimal entry shapes for export functions ───────────────────────────────
+
+interface ExportPaperItem {
+  quality: unknown; gsm: unknown; form_type: unknown; reel_width: unknown; number_of_reels: unknown;
+  total_reel_weight: number | null | undefined; sheet_length: unknown; sheet_width: unknown;
+  total_sheets: unknown; sheet_weight: number | null | undefined;
+}
+interface ExportPaperEntry {
+  inward_date: string; inward_time: string; supplier_name: unknown; invoice_number: unknown;
+  work_type: unknown; customer_name: unknown; checked_received_by: unknown; remarks: unknown;
+  items: ExportPaperItem[];
+}
+
+interface ExportPlateSizeItem {
+  plate_size: unknown; length_mm: unknown; width_mm: unknown;
+  total_packets: unknown; plates_per_packet: unknown; total_plates: unknown;
+}
+interface ExportCTPEntry {
+  inward_date: string; inward_time: string; supplier_name: unknown; invoice_number: unknown;
+  checked_received_by: unknown; remarks: unknown; grand_total_plates: unknown;
+  plate_sizes: ExportPlateSizeItem[];
+}
+
+interface ExportInkItem {
+  item_number: unknown; item_type: unknown; category: unknown; color: unknown;
+  pantone_number: unknown; varnish_type: unknown; item_total_weight: number | null | undefined;
+}
+interface ExportInkEntry {
+  inward_date: string; inward_time: string; supplier_name: unknown; invoice_number: unknown;
+  checked_received_by: unknown; remarks: unknown; grand_total_weight: number | null | undefined;
+  items: ExportInkItem[];
+}
+
+interface ExportChemicalItem {
+  item_number: unknown; chemical_name: unknown; manufacturer: unknown;
+  item_total_quantity: number | null | undefined;
+}
+interface ExportChemicalEntry {
+  inward_date: string; inward_time: string; supplier_name: unknown; invoice_number: unknown;
+  checked_received_by: unknown; remarks: unknown; grand_total_quantity: number | null | undefined;
+  items: ExportChemicalItem[];
+}
+
+interface ExportAdhesiveItem {
+  item_number: unknown; adhesive_name: unknown; manufacturer: unknown;
+  item_total_quantity: number | null | undefined;
+}
+interface ExportAdhesiveEntry {
+  inward_date: string; inward_time: string; supplier_name: unknown; invoice_number: unknown;
+  checked_received_by: unknown; remarks: unknown; grand_total_quantity: number | null | undefined;
+  items: ExportAdhesiveItem[];
+}
+
+interface ExportConsumableItem {
+  item_number: unknown; consumable_name: unknown; manufacturer: unknown;
+  item_total_quantity: number | null | undefined;
+}
+interface ExportConsumableEntry {
+  inward_date: string; inward_time: string; supplier_name: unknown; invoice_number: unknown;
+  checked_received_by: unknown; remarks: unknown; grand_total_quantity: number | null | undefined;
+  items: ExportConsumableItem[];
+}
+
+interface ExportPackingItem {
+  item_number: unknown; material_type: unknown; custom_name: unknown;
+  item_total_quantity: number | null | undefined;
+}
+interface ExportPackingEntry {
+  inward_date: string; inward_time: string; supplier_name: unknown; invoice_number: unknown;
+  checked_received_by: unknown; remarks: unknown;
+  items: ExportPackingItem[];
+}
+
+interface ExportOilItem {
+  item_number: unknown; oil_name: unknown; manufacturer: unknown; machine_name: unknown;
+  item_total_quantity: number | null | undefined;
+}
+interface ExportOilEntry {
+  inward_date: string; inward_time: string; supplier_name: unknown; invoice_number: unknown;
+  checked_received_by: unknown; remarks: unknown; grand_total_quantity: number | null | undefined;
+  items: ExportOilItem[];
+}
+
+interface ExportDieItem {
+  item_number: unknown; die_number: unknown; job_name: unknown; ups: unknown; embossing: unknown;
+  female_block: unknown; rubberized: unknown; length: unknown; width: unknown; height: unknown;
+  storage_location: unknown; status: unknown; discontinued_date: unknown;
+}
+interface ExportDiesEntry {
+  inward_date: string; inward_time: string; supplier_name: unknown; invoice_number: unknown;
+  checked_received_by: unknown; remarks: unknown;
+  items: ExportDieItem[];
+}
+
+interface ExportInkOutwardItem {
+  item_type: unknown; category: unknown; color: unknown; pantone_number: unknown; varnish_type: unknown;
+  containers_issued: unknown; weight_per_container: unknown; total_weight_issued: unknown;
+}
+interface ExportInkAdjustment {
+  item_type: unknown; category: unknown; color: unknown; pantone_number: unknown; varnish_type: unknown;
+  quantity_kg: unknown; reason: unknown;
+}
+interface ExportInkOutwardEntry {
+  outward_date: string; outward_time: string | null;
+  job_name: unknown; job_card_number: unknown; issued_by: unknown; received_by: unknown; remarks: unknown;
+  items: ExportInkOutwardItem[];
+  adjustments: ExportInkAdjustment[];
+}
+
+interface ExportCTPOutwardItem {
+  plate_size: unknown; quantity_issued: unknown;
+}
+interface ExportCTPAdjustment {
+  plate_size: unknown; quantity: unknown; reason: unknown;
+}
+interface ExportCTPOutwardEntry {
+  outward_date: string; outward_time: string | null;
+  issued_by: unknown; received_by: unknown; remarks: unknown;
+  items: ExportCTPOutwardItem[];
+  adjustments: ExportCTPAdjustment[];
+}
+
+interface ExportPaperOutwardItem {
+  quality: unknown; gsm: unknown; form_type: unknown;
+  weight_issued: unknown; sheets_issued: unknown; issue_method: unknown;
+}
+interface ExportPaperAdjustment {
+  quality: unknown; gsm: unknown; form_type: unknown; quantity: unknown; unit: unknown; reason: unknown;
+}
+interface ExportPaperOutwardEntry {
+  outward_date: string; outward_time: string | null;
+  job_name: unknown; job_card_number: unknown; issued_by: unknown; received_by: unknown; remarks: unknown;
+  items: ExportPaperOutwardItem[];
+  adjustments: ExportPaperAdjustment[];
+}
+
 // ─── Module flatten functions ────────────────────────────────────────────────
 
-export function exportPaper(entries: any[], format: "pdf" | "excel", rangeLabel: string) {
+export function exportPaper(entries: ExportPaperEntry[], format: "pdf" | "excel", rangeLabel: string) {
   const rows: Record<string, string>[] = [];
   for (const e of entries) {
     for (const item of e.items || []) {
@@ -130,7 +266,7 @@ export function exportPaper(entries: any[], format: "pdf" | "excel", rangeLabel:
   buildPDF("Paper", rangeLabel, cols, rows.map(r => cols.map(c => r[c])));
 }
 
-export function exportCTP(entries: any[], format: "pdf" | "excel", rangeLabel: string) {
+export function exportCTP(entries: ExportCTPEntry[], format: "pdf" | "excel", rangeLabel: string) {
   const rows: Record<string, string>[] = [];
   for (const e of entries) {
     for (const ps of e.plate_sizes || []) {
@@ -157,7 +293,7 @@ export function exportCTP(entries: any[], format: "pdf" | "excel", rangeLabel: s
   buildPDF("CTP Plates", rangeLabel, cols, rows.map(r => cols.map(c => r[c])));
 }
 
-export function exportInk(entries: any[], format: "pdf" | "excel", rangeLabel: string) {
+export function exportInk(entries: ExportInkEntry[], format: "pdf" | "excel", rangeLabel: string) {
   const rows: Record<string, string>[] = [];
   for (const e of entries) {
     for (const item of e.items || []) {
@@ -185,7 +321,7 @@ export function exportInk(entries: any[], format: "pdf" | "excel", rangeLabel: s
   buildPDF("Ink and Varnishes", rangeLabel, cols, rows.map(r => cols.map(c => r[c])));
 }
 
-export function exportChemicals(entries: any[], format: "pdf" | "excel", rangeLabel: string) {
+export function exportChemicals(entries: ExportChemicalEntry[], format: "pdf" | "excel", rangeLabel: string) {
   const rows: Record<string, string>[] = [];
   for (const e of entries) {
     for (const item of e.items || []) {
@@ -210,7 +346,7 @@ export function exportChemicals(entries: any[], format: "pdf" | "excel", rangeLa
   buildPDF("Chemicals", rangeLabel, cols, rows.map(r => cols.map(c => r[c])));
 }
 
-export function exportAdhesives(entries: any[], format: "pdf" | "excel", rangeLabel: string) {
+export function exportAdhesives(entries: ExportAdhesiveEntry[], format: "pdf" | "excel", rangeLabel: string) {
   const rows: Record<string, string>[] = [];
   for (const e of entries) {
     for (const item of e.items || []) {
@@ -235,7 +371,7 @@ export function exportAdhesives(entries: any[], format: "pdf" | "excel", rangeLa
   buildPDF("Adhesives", rangeLabel, cols, rows.map(r => cols.map(c => r[c])));
 }
 
-export function exportConsumables(entries: any[], format: "pdf" | "excel", rangeLabel: string) {
+export function exportConsumables(entries: ExportConsumableEntry[], format: "pdf" | "excel", rangeLabel: string) {
   const rows: Record<string, string>[] = [];
   for (const e of entries) {
     for (const item of e.items || []) {
@@ -260,11 +396,11 @@ export function exportConsumables(entries: any[], format: "pdf" | "excel", range
   buildPDF("Consumables", rangeLabel, cols, rows.map(r => cols.map(c => r[c])));
 }
 
-export function exportPacking(entries: any[], format: "pdf" | "excel", rangeLabel: string) {
+export function exportPacking(entries: ExportPackingEntry[], format: "pdf" | "excel", rangeLabel: string) {
   const rows: Record<string, string>[] = [];
   for (const e of entries) {
     for (const item of e.items || []) {
-      const name = item.material_type === "Other" && item.custom_name ? item.custom_name : item.material_type;
+      const name = item.material_type === "Other" && item.custom_name ? s(item.custom_name) : s(item.material_type);
       rows.push({
         "Date": fmtDate(e.inward_date),
         "Time": fmtTime(e.inward_time),
@@ -285,7 +421,7 @@ export function exportPacking(entries: any[], format: "pdf" | "excel", rangeLabe
   buildPDF("Packing Materials", rangeLabel, cols, rows.map(r => cols.map(c => r[c])));
 }
 
-export function exportOil(entries: any[], format: "pdf" | "excel", rangeLabel: string) {
+export function exportOil(entries: ExportOilEntry[], format: "pdf" | "excel", rangeLabel: string) {
   const rows: Record<string, string>[] = [];
   for (const e of entries) {
     for (const item of e.items || []) {
@@ -311,7 +447,7 @@ export function exportOil(entries: any[], format: "pdf" | "excel", rangeLabel: s
   buildPDF("Oil and Lubrication", rangeLabel, cols, rows.map(r => cols.map(c => r[c])));
 }
 
-export function exportDies(entries: any[], format: "pdf" | "excel", rangeLabel: string) {
+export function exportDies(entries: ExportDiesEntry[], format: "pdf" | "excel", rangeLabel: string) {
   const rows: Record<string, string>[] = [];
   for (const e of entries) {
     for (const item of e.items || []) {
@@ -334,7 +470,7 @@ export function exportDies(entries: any[], format: "pdf" | "excel", rangeLabel: 
         "Height (mm)": s(item.height),
         "Storage Location": s(item.storage_location),
         "Status": s(item.status),
-        "Discontinued Date": item.discontinued_date ? fmtDate(item.discontinued_date) : "",
+        "Discontinued Date": item.discontinued_date ? fmtDate(s(item.discontinued_date)) : "",
       });
     }
   }
@@ -344,13 +480,13 @@ export function exportDies(entries: any[], format: "pdf" | "excel", rangeLabel: 
   buildPDF("Dies", rangeLabel, cols, rows.map(r => cols.map(c => r[c])));
 }
 
-export async function exportInkOutward(entries: any[], format: "pdf" | "excel", rangeLabel: string) {
+export async function exportInkOutward(entries: ExportInkOutwardEntry[], format: "pdf" | "excel", rangeLabel: string) {
   const rows: Record<string, string>[] = [];
   for (const e of entries) {
     for (const item of e.items || []) {
-      let itemName = item.category === "Ink"
-        ? `${item.item_type} — ${item.color}${item.pantone_number ? ` (${item.pantone_number})` : ""}`
-        : `${item.item_type === "UV Ink" ? "UV" : "Conventional"} Varnish — ${item.varnish_type}`;
+      const itemName = item.category === "Ink"
+        ? `${s(item.item_type)} — ${s(item.color)}${item.pantone_number ? ` (${s(item.pantone_number)})` : ""}`
+        : `${s(item.item_type) === "UV Ink" ? "UV" : "Conventional"} Varnish — ${s(item.varnish_type)}`;
       rows.push({
         "Date": fmtDate(e.outward_date),
         "Time": fmtTime(e.outward_time),
@@ -367,9 +503,9 @@ export async function exportInkOutward(entries: any[], format: "pdf" | "excel", 
       });
     }
     for (const adj of e.adjustments || []) {
-      let itemName = adj.category === "Ink"
-        ? `${adj.item_type} — ${adj.color}${adj.pantone_number ? ` (${adj.pantone_number})` : ""}`
-        : `${adj.item_type === "UV Ink" ? "UV" : "Conventional"} Varnish — ${adj.varnish_type}`;
+      const itemName = adj.category === "Ink"
+        ? `${s(adj.item_type)} — ${s(adj.color)}${adj.pantone_number ? ` (${s(adj.pantone_number)})` : ""}`
+        : `${s(adj.item_type) === "UV Ink" ? "UV" : "Conventional"} Varnish — ${s(adj.varnish_type)}`;
       rows.push({
         "Date": fmtDate(e.outward_date),
         "Time": fmtTime(e.outward_time),
@@ -418,7 +554,7 @@ export async function exportInkOutward(entries: any[], format: "pdf" | "excel", 
   doc.save(`ink-outward-${new Date().toISOString().slice(0, 10)}.pdf`);
 }
 
-export async function exportCTPOutward(entries: any[], format: "pdf" | "excel", rangeLabel: string) {
+export async function exportCTPOutward(entries: ExportCTPOutwardEntry[], format: "pdf" | "excel", rangeLabel: string) {
   const rows: Record<string, string>[] = [];
   for (const e of entries) {
     for (const item of e.items || []) {
@@ -476,15 +612,15 @@ export async function exportCTPOutward(entries: any[], format: "pdf" | "excel", 
   doc.save(`ctp-outward-${new Date().toISOString().slice(0, 10)}.pdf`);
 }
 
-export function exportPaperOutward(entries: any[], format: "pdf" | "excel", rangeLabel: string) {
+export function exportPaperOutward(entries: ExportPaperOutwardEntry[], format: "pdf" | "excel", rangeLabel: string) {
   const rows: Record<string, string>[] = [];
   for (const e of entries) {
     for (const item of e.items || []) {
-      const qty = item.form_type === "Reel Form"
-        ? `${item.weight_issued ?? ""} Kg`
-        : item.issue_method === "sheets"
-          ? `${item.sheets_issued ?? ""} Sheets`
-          : `${item.weight_issued ?? ""} Kg (weight)`;
+      const qty = s(item.form_type) === "Reel Form"
+        ? `${s(item.weight_issued)} Kg`
+        : s(item.issue_method) === "sheets"
+          ? `${s(item.sheets_issued)} Sheets`
+          : `${s(item.weight_issued)} Kg (weight)`;
       rows.push({
         "Date": fmtDate(e.outward_date),
         "Time": fmtTime(e.outward_time),
@@ -497,7 +633,7 @@ export function exportPaperOutward(entries: any[], format: "pdf" | "excel", rang
         "GSM": s(item.gsm),
         "Form Type": s(item.form_type),
         "Quantity Issued": qty,
-        "Issue Method": item.issue_method || (item.form_type === "Reel Form" ? "weight" : ""),
+        "Issue Method": s(item.issue_method) || (s(item.form_type) === "Reel Form" ? "weight" : ""),
       });
     }
     for (const adj of e.adjustments || []) {
@@ -512,7 +648,7 @@ export function exportPaperOutward(entries: any[], format: "pdf" | "excel", rang
         "Quality": s(adj.quality),
         "GSM": s(adj.gsm),
         "Form Type": s(adj.form_type),
-        "Quantity Issued": `+${adj.quantity} ${adj.unit}`,
+        "Quantity Issued": `+${s(adj.quantity)} ${s(adj.unit)}`,
         "Issue Method": "adjustment",
       });
     }
@@ -665,7 +801,7 @@ export function exportDieMovement(
   rangeLabel: string,
 ): void {
   const moduleTitle = "Dies Movement";
-  const rows = entries.map((e) => ({
+  const rows: Record<string, string>[] = entries.map((e) => ({
     "Date": fmtDate(e.movement_date), "Time": fmtTime(e.movement_time ?? ""),
     "Die No.": s(e.die_number), "Job Name": s(e.job_name),
     "UPS": s(e.ups), "Embossing": s(e.embossing), "Rubberized": s(e.rubberized),

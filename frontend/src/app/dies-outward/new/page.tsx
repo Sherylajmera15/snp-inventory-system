@@ -65,7 +65,7 @@ export default function DiesOutwardNewPage() {
     if (!issuedTo.trim()) { setError("Issued To is required."); return; }
     setError(""); setSubmitting(true);
     try {
-      const res = await api.post("/api/die-movement", {
+      await api.post("/api/die-movement", {
         movement_date: movementDate, movement_time: movementTime || null,
         die_item_id: selectedDie.id, issued_to: issuedTo.trim(),
         current_location: currentLocation.trim() || null,

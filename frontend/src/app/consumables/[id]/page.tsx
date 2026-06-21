@@ -56,8 +56,8 @@ export default function ConsumableDetailPage() {
     try {
       const res = await api.get(`/api/consumables/${id}`);
       setEntry(res.data);
-    } catch (err: any) {
-      setError(err.response?.data?.detail || "Failed to load entry");
+    } catch (err: unknown) {
+      setError((err as { response?: { data?: { detail?: string } } }).response?.data?.detail || "Failed to load entry");
     } finally {
       setFetching(false);
     }
@@ -111,8 +111,8 @@ export default function ConsumableDetailPage() {
     );
   }
 
-  const within24 = isWithin24Hours(entry.inward_date, (entry as any).inward_time ?? null);
-  const canEdit = user.role === "admin" || ((entry as any).created_by_id === user.id && within24);
+  const within24 = isWithin24Hours(entry.inward_date, entry.inward_time ?? null);
+  const canEdit = user.role === "admin" || (entry.created_by_id === user.id && within24);
 
   return (
     <div className="min-h-screen bg-cream">
@@ -126,8 +126,8 @@ export default function ConsumableDetailPage() {
             <Field label="Invoice/Bill Number" value={entry.invoice_number || "—"} />
             <Field label="Checked and Received By" value={entry.checked_received_by || "—"} />
             <Field label="Remarks" value={entry.remarks || "—"} />
-            {(entry as any).created_by_name && (
-              <Field label="Created By" value={(entry as any).created_by_name} />
+            {entry.created_by_name && (
+              <Field label="Created By" value={entry.created_by_name} />
             )}
           </div>
 

@@ -23,6 +23,8 @@ export interface DieMovementDetail {
   issued_by: string | null;
   received_by: string | null;
   remarks: string | null;
+  created_by_id?: number | null;
+  created_by_name?: string | null;
 }
 
 export interface DieMovementListItem {

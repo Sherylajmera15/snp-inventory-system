@@ -31,6 +31,8 @@ export interface CTPInwardDetail extends CTPInwardInput {
   id: number;
   plate_sizes: PlateSize[];
   grand_total_plates: number;
+  created_by_id?: number | null;
+  created_by_name?: string | null;
 }
 
 export interface CTPInwardListItem {

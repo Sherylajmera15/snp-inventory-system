@@ -167,8 +167,8 @@ export default function PaperEntryForm({ initialData, onSaved, onCancel }: Paper
         res = await api.post("/api/paper", payload);
       }
       onSaved(res.data.id);
-    } catch (err: any) {
-      setError(err.response?.data?.detail || "Failed to save inward entry");
+    } catch (err: unknown) {
+      setError((err as { response?: { data?: { detail?: string } } }).response?.data?.detail || "Failed to save inward entry");
     } finally {
       setSaving(false);
     }

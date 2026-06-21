@@ -34,6 +34,8 @@ export interface GenericOutwardDetail {
   remarks: string | null;
   items: GenericOutwardItem[];
   adjustments: GenericAdjEntry[];
+  created_by_id?: number | null;
+  created_by_name?: string | null;
 }
 
 export interface GenericOutwardListItem {

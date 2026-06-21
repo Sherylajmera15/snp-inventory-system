@@ -68,7 +68,7 @@ export default function CTPOutwardDetailPage() {
     try {
       await api.delete(`/api/ctp-outward/${id}`, { data: { password } });
       router.replace("/ctp-outward");
-    } catch (e: any) { setDeleteError(e.response?.data?.detail ?? "Failed to delete."); }
+    } catch (e: unknown) { setDeleteError((e as { response?: { data?: { detail?: string } } }).response?.data?.detail ?? "Failed to delete."); }
   };
 
   if (loading || (!detail && fetching)) {
@@ -110,7 +110,7 @@ export default function CTPOutwardDetailPage() {
       const res = await api.put(`/api/ctp-outward/${id}`, { ...editData, outward_time: editData.outward_time || null });
       setDetail((prev) => prev ? { ...prev, ...res.data } : prev);
       setEditMode(false);
-    } catch (e: any) { setSaveError(e.response?.data?.detail ?? "Failed to save."); }
+    } catch (e: unknown) { setSaveError((e as { response?: { data?: { detail?: string } } }).response?.data?.detail ?? "Failed to save."); }
     finally { setSaving(false); }
   }
 
@@ -121,7 +121,7 @@ export default function CTPOutwardDetailPage() {
   const totalPlates = detail.items.reduce((s, i) => s + i.quantity_issued, 0);
   const within24 = isWithin24Hours(toDateInput(detail.outward_date), detail.outward_time ? String(detail.outward_time).slice(0, 5) : null);
   const canEdit = user?.role === "admin" || (
-    (detail as any).created_by_id === user?.id && within24
+    detail.created_by_id === user?.id && within24
   );
 
   return (
@@ -171,7 +171,7 @@ export default function CTPOutwardDetailPage() {
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 pt-1">
               <InfoRow label="Issued By" value={detail.issued_by} />
               <InfoRow label="Received By" value={detail.received_by} />
-              <InfoRow label="Created By" value={(detail as any).created_by_name} />
+              <InfoRow label="Created By" value={detail.created_by_name} />
               <InfoRow label="Remarks" value={detail.remarks} />
             </div>
           )}

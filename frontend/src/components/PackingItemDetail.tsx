@@ -7,15 +7,6 @@ interface PackingItemDetailProps {
   index: number;
 }
 
-function Row({ label, value }: { label: string; value: React.ReactNode }) {
-  return (
-    <div className="flex items-baseline gap-2">
-      <span className="text-xs text-taupe uppercase tracking-wide min-w-[120px]">{label}</span>
-      <span className="text-sm text-charcoal font-medium">{value}</span>
-    </div>
-  );
-}
-
 export default function PackingItemDetail({ item, index }: PackingItemDetailProps) {
   const t = item.material_type;
 

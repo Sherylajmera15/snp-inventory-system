@@ -129,8 +129,8 @@ export default function ConsumableEntryForm({ initialData, onSaved, onCancel }: 
         ? await api.put(`/api/consumables/${initialData.id}`, payload)
         : await api.post("/api/consumables", payload);
       onSaved(res.data.id);
-    } catch (err: any) {
-      setError(err.response?.data?.detail || "Failed to save inward entry");
+    } catch (err: unknown) {
+      setError((err as { response?: { data?: { detail?: string } } }).response?.data?.detail || "Failed to save inward entry");
     } finally {
       setSaving(false);
     }

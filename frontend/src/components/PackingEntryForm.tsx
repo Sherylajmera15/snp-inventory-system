@@ -123,8 +123,8 @@ export default function PackingEntryForm({ initialData, onSaved, onCancel }: Pac
         ? await api.put(`/api/packing/${initialData.id}`, payload)
         : await api.post("/api/packing", payload);
       onSaved(res.data.id);
-    } catch (err: any) {
-      setError(err.response?.data?.detail || "Failed to save inward entry");
+    } catch (err: unknown) {
+      setError((err as { response?: { data?: { detail?: string } } }).response?.data?.detail || "Failed to save inward entry");
     } finally {
       setSaving(false);
     }

@@ -80,7 +80,7 @@ export default function OilOutwardDetailPage() {
       const res = await api.put(`/api/oil-outward/${id}`, { ...editData, outward_time: editData.outward_time || null });
       setEntry((prev) => prev ? { ...prev, ...res.data } : prev);
       setEditMode(false);
-    } catch (e: any) { setSaveError(e.response?.data?.detail ?? "Failed to save."); }
+    } catch (e: unknown) { setSaveError((e as { response?: { data?: { detail?: string } } }).response?.data?.detail ?? "Failed to save."); }
     finally { setSaving(false); }
   }
 

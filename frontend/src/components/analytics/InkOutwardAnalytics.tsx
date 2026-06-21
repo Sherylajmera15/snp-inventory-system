@@ -49,7 +49,6 @@ export default function InkOutwardAnalyticsComponent() {
 
   const maxColor = Math.max(...data.color_breakdown.map((x) => x.total_kg), 1);
   const maxVarnish = Math.max(...data.varnish_breakdown.map((x) => x.total_kg), 1);
-  const maxTop = Math.max(...data.top_consumed.map((x) => x.total_kg), 1);
 
   return (
     <div className="bg-white border border-sand rounded-2xl p-5 mb-6 space-y-5">

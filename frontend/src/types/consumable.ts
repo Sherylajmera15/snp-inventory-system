@@ -85,6 +85,8 @@ export interface ConsumableInwardDetail {
   remarks?: string | null;
   items: ConsumableItem[];
   grand_total_quantity: number;
+  created_by_id?: number | null;
+  created_by_name?: string | null;
 }
 
 export interface ConsumableInwardListItem {

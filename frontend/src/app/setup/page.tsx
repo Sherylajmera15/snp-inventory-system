@@ -35,8 +35,8 @@ export default function SetupPage() {
     try {
       await api.post("/api/auth/setup", { full_name: fullName, username, password });
       router.replace("/login");
-    } catch (err: any) {
-      setError(err.response?.data?.detail || "Setup failed. Please try again.");
+    } catch (err: unknown) {
+      setError((err as { response?: { data?: { detail?: string } } }).response?.data?.detail || "Setup failed. Please try again.");
     } finally {
       setSubmitting(false);
     }

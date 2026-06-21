@@ -82,7 +82,7 @@ export default function DiesOutwardDetailPage() {
       });
       setEntry((prev) => prev ? { ...prev, ...res.data } : prev);
       setEditMode(false);
-    } catch (e: any) { setSaveError(e.response?.data?.detail ?? "Failed to save."); }
+    } catch (e: unknown) { setSaveError((e as { response?: { data?: { detail?: string } } }).response?.data?.detail ?? "Failed to save."); }
     finally { setSaving(false); }
   }
 
@@ -95,7 +95,7 @@ export default function DiesOutwardDetailPage() {
   const timeStr = entry.movement_time ? String(entry.movement_time).slice(0, 5) : null;
   const within24 = isWithin24Hours(dateStr, timeStr);
   const canEdit = user.role === "admin" || (
-    (entry as any).created_by_id === user.id && within24
+    entry.created_by_id === user.id && within24
   );
 
   return (
@@ -169,7 +169,7 @@ export default function DiesOutwardDetailPage() {
             <Field label="Current Location" value={entry.current_location} />
             <Field label="Issued By" value={entry.issued_by} />
             <Field label="Received By" value={entry.received_by} />
-            <Field label="Created By" value={(entry as any).created_by_name ?? "—"} />
+            <Field label="Created By" value={entry.created_by_name ?? "—"} />
             {entry.remarks && <div className="col-span-2 md:col-span-3"><Field label="Remarks" value={entry.remarks} /></div>}
           </div>
         )}

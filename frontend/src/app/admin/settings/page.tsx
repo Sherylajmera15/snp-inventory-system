@@ -51,8 +51,8 @@ export default function AdminSettingsPage() {
       setAdminPw("");
       setNewEditPw("");
       setConfirmEditPw("");
-    } catch (err: any) {
-      setSaveMsg({ ok: false, text: err.response?.data?.detail ?? "Failed to update password." });
+    } catch (err: unknown) {
+      setSaveMsg({ ok: false, text: (err as { response?: { data?: { detail?: string } } }).response?.data?.detail ?? "Failed to update password." });
     } finally {
       setSaving(false);
     }

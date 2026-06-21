@@ -32,6 +32,8 @@ export interface CTPOutwardDetail {
   created_at: string | null;
   items: CTPOutwardItem[];
   adjustments: CTPAdjEntry[];
+  created_by_id?: number | null;
+  created_by_name?: string | null;
 }
 
 export interface CTPOutwardListItem {

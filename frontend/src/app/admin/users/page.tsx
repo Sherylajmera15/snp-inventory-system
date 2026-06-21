@@ -75,8 +75,8 @@ export default function UserManagementPage() {
     try {
       await api.post(`/api/admin/users/${p.id}/approve`);
       loadData();
-    } catch (err: any) {
-      setActionError(err.response?.data?.detail || "Failed to approve user.");
+    } catch (err: unknown) {
+      setActionError((err as { response?: { data?: { detail?: string } } }).response?.data?.detail || "Failed to approve user.");
     }
   }
 
@@ -85,8 +85,8 @@ export default function UserManagementPage() {
     try {
       await api.post(`/api/admin/users/${p.id}/reject`);
       loadData();
-    } catch (err: any) {
-      setActionError(err.response?.data?.detail || "Failed to reject user.");
+    } catch (err: unknown) {
+      setActionError((err as { response?: { data?: { detail?: string } } }).response?.data?.detail || "Failed to reject user.");
     }
   }
 
@@ -99,8 +99,8 @@ export default function UserManagementPage() {
       setShowCreate(false);
       setCreateForm({ full_name: "", username: "", password: "" });
       loadData();
-    } catch (err: any) {
-      setCreateError(err.response?.data?.detail || "Failed to create administrator.");
+    } catch (err: unknown) {
+      setCreateError((err as { response?: { data?: { detail?: string } } }).response?.data?.detail || "Failed to create administrator.");
     } finally {
       setCreating(false);
     }
@@ -111,8 +111,8 @@ export default function UserManagementPage() {
     try {
       await api.put(`/api/admin/users/${u.id}`, { is_active: !u.is_active });
       loadData();
-    } catch (err: any) {
-      setActionError(err.response?.data?.detail || "Failed to update user.");
+    } catch (err: unknown) {
+      setActionError((err as { response?: { data?: { detail?: string } } }).response?.data?.detail || "Failed to update user.");
     }
   }
 
@@ -125,8 +125,8 @@ export default function UserManagementPage() {
       await api.put(`/api/admin/users/${resetTarget.id}`, { new_password: resetPassword });
       setResetTarget(null);
       setResetPassword("");
-    } catch (err: any) {
-      setResetError(err.response?.data?.detail || "Failed to reset password.");
+    } catch (err: unknown) {
+      setResetError((err as { response?: { data?: { detail?: string } } }).response?.data?.detail || "Failed to reset password.");
     } finally {
       setResetting(false);
     }

@@ -60,6 +60,8 @@ export interface PackingMaterialDetail {
   remarks?: string | null;
   items: PackingMaterialItemOut[];
   grand_total_quantity: number;
+  created_by_id?: number | null;
+  created_by_name?: string | null;
 }
 
 export interface PackingMaterialListItem {

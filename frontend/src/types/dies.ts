@@ -32,6 +32,8 @@ export interface DiesInwardDetail {
   checked_received_by?: string | null;
   remarks?: string | null;
   items: DieItem[];
+  created_by_id?: number | null;
+  created_by_name?: string | null;
 }
 
 export interface DiesInwardListItem {

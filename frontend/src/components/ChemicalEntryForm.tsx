@@ -130,8 +130,8 @@ export default function ChemicalEntryForm({ initialData, onSaved, onCancel }: Ch
         ? await api.put(`/api/chemicals/${initialData.id}`, payload)
         : await api.post("/api/chemicals", payload);
       onSaved(res.data.id);
-    } catch (err: any) {
-      setError(err.response?.data?.detail || "Failed to save inward entry");
+    } catch (err: unknown) {
+      setError((err as { response?: { data?: { detail?: string } } }).response?.data?.detail || "Failed to save inward entry");
     } finally {
       setSaving(false);
     }

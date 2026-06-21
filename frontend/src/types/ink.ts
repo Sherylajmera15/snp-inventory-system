@@ -60,6 +60,8 @@ export interface InkInwardDetail extends Omit<InkInwardInput, "checked_received_
   checked_received_by?: string | null;
   items: InkItem[];
   grand_total_weight: number;
+  created_by_id?: number | null;
+  created_by_name?: string | null;
 }
 
 export interface InkInwardListItem {

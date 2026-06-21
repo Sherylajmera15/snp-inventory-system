@@ -79,6 +79,8 @@ export interface PaperInwardDetail extends Omit<PaperInwardInput, "work_type" | 
   work_type?: WorkType | null;
   checked_received_by?: string | null;
   items: PaperItem[];
+  created_by_id?: number | null;
+  created_by_name?: string | null;
 }
 
 export interface PaperInwardListItem {

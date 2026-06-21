@@ -57,6 +57,8 @@ export interface PaperOutwardDetail {
   created_at: string | null;
   items: OutwardItem[];
   adjustments: AdjustmentEntry[];
+  created_by_id?: number | null;
+  created_by_name?: string | null;
 }
 
 export interface PaperOutwardListItem {

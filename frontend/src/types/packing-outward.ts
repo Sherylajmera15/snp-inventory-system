@@ -39,6 +39,8 @@ export interface PackingOutwardDetail {
   remarks: string | null;
   items: PackingOutwardItem[];
   adjustments: PackingAdjEntry[];
+  created_by_id?: number | null;
+  created_by_name?: string | null;
 }
 
 export interface PackingOutwardListItem {

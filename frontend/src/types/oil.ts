@@ -22,19 +22,22 @@ export type OilSuggestionCategory =
   | "machine_name"
   | "checked_received_by";
 
-export interface OilQuantityGroupOut {
-  group_number: number;
+export interface OilQuantityGroupInput {
   number_of_packs: number;
   quantity_per_pack: number;
-  group_quantity: number;
   unit: string;
+}
+
+export interface OilQuantityGroupOut extends OilQuantityGroupInput {
+  group_number: number;
+  group_quantity: number;
 }
 
 export interface OilItemInput {
   oil_name: string;
   manufacturer?: string | null;
   machine_name?: string | null;
-  quantity_groups: OilQuantityGroupOut[];
+  quantity_groups: OilQuantityGroupInput[];
 }
 
 export interface OilItem {
@@ -57,6 +60,8 @@ export interface OilInwardDetail {
   remarks?: string | null;
   items: OilItem[];
   grand_total_quantity: number;
+  created_by_id?: number | null;
+  created_by_name?: string | null;
 }
 
 export interface OilInwardListItem {

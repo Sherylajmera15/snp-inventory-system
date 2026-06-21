@@ -63,6 +63,8 @@ export interface ChemicalInwardDetail {
   remarks?: string | null;
   items: ChemicalItem[];
   grand_total_quantity: number;
+  created_by_id?: number | null;
+  created_by_name?: string | null;
 }
 
 export interface ChemicalInwardListItem {

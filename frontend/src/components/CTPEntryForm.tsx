@@ -197,8 +197,8 @@ export default function CTPEntryForm({ initialData, onSaved, onCancel }: CTPEntr
         res = await api.post("/api/ctp", payload);
       }
       onSaved(res.data.id);
-    } catch (err: any) {
-      setError(err.response?.data?.detail || "Failed to save CTP inward entry");
+    } catch (err: unknown) {
+      setError((err as { response?: { data?: { detail?: string } } }).response?.data?.detail || "Failed to save CTP inward entry");
     } finally {
       setSaving(false);
     }

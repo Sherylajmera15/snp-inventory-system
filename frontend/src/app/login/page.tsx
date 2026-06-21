@@ -3,6 +3,7 @@
 import { useState, FormEvent, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
 import { useAuth } from "@/context/AuthContext";
 import api from "@/lib/api";
 
@@ -38,8 +39,8 @@ export default function LoginPage() {
     setSubmitting(true);
     try {
       await login(username, password, keepLoggedIn);
-    } catch (err: any) {
-      setError(err.response?.data?.detail || "Login failed. Please try again.");
+    } catch (err: unknown) {
+      setError((err as { response?: { data?: { detail?: string } } }).response?.data?.detail || "Login failed. Please try again.");
     } finally {
       setSubmitting(false);
     }
@@ -59,10 +60,13 @@ export default function LoginPage() {
         <div className="text-center mb-8">
           {/* Company logo */}
           <div className="flex justify-center mb-5">
-            <img
+            <Image
               src="/logo.png"
               alt="SNP Logo"
-              className="h-20 w-auto object-contain"
+              width={80}
+              height={80}
+              className="object-contain"
+              style={{ height: "5rem", width: "auto" }}
             />
           </div>
           <h1 className="text-2xl font-semibold text-charcoal tracking-tight">

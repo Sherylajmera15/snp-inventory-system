@@ -35,8 +35,8 @@ export default function PaperDetailPage() {
     try {
       const res = await api.get(`/api/paper/${id}`);
       setEntry(res.data);
-    } catch (err: any) {
-      setError(err.response?.data?.detail || "Failed to load entry");
+    } catch (err: unknown) {
+      setError((err as { response?: { data?: { detail?: string } } }).response?.data?.detail || "Failed to load entry");
     } finally {
       setFetching(false);
     }
@@ -132,17 +132,17 @@ export default function PaperDetailPage() {
               <p className="text-xs text-taupe uppercase tracking-wide">Remarks</p>
               <p className="text-sm text-charcoal font-medium">{entry.remarks || "—"}</p>
             </div>
-            {(entry as any).created_by_name && (
+            {entry.created_by_name && (
               <div>
                 <p className="text-xs text-taupe uppercase tracking-wide">Created By</p>
-                <p className="text-sm text-charcoal font-medium">{(entry as any).created_by_name}</p>
+                <p className="text-sm text-charcoal font-medium">{entry.created_by_name}</p>
               </div>
             )}
           </div>
 
           {(() => {
-            const within24 = isWithin24Hours(entry.inward_date, (entry as any).inward_time ?? null);
-            const canEdit = user.role === "admin" || ((entry as any).created_by_id === user.id && within24);
+            const within24 = isWithin24Hours(entry.inward_date, entry.inward_time ?? null);
+            const canEdit = user.role === "admin" || (entry.created_by_id === user.id && within24);
             return (canEdit || user.role === "admin") ? (
               <div className="flex gap-2 flex-shrink-0">
                 {canEdit && (

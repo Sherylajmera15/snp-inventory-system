@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 
 interface SearchableSelectProps {
   options: readonly string[];
@@ -20,6 +20,7 @@ export default function SearchableSelect({
   const [query, setQuery] = useState(value);
   const [open, setOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
+  const listboxId = useId();
 
   useEffect(() => {
     setQuery(value);
@@ -59,10 +60,11 @@ export default function SearchableSelect({
         autoComplete="off"
         role="combobox"
         aria-expanded={open}
+        aria-controls={listboxId}
         aria-autocomplete="list"
       />
       {open && filtered.length > 0 && (
-        <div className="absolute z-50 left-0 right-0 mt-1 bg-white border border-sand rounded-lg shadow-lg max-h-52 overflow-y-auto">
+        <div id={listboxId} role="listbox" className="absolute z-50 left-0 right-0 mt-1 bg-white border border-sand rounded-lg shadow-lg max-h-52 overflow-y-auto">
           {filtered.map((opt) => (
             <button
               key={opt}

@@ -108,7 +108,7 @@ export default function InkOutwardDetailPage() {
       const res = await api.put(`/api/ink-outward/${id}`, { ...editData, outward_time: editData.outward_time || null });
       setEntry((prev) => prev ? { ...prev, ...res.data } : prev);
       setEditMode(false);
-    } catch (e: any) { setSaveError(e.response?.data?.detail ?? "Failed to save."); }
+    } catch (e: unknown) { setSaveError((e as { response?: { data?: { detail?: string } } }).response?.data?.detail ?? "Failed to save."); }
     finally { setSaving(false); }
   }
 
@@ -122,7 +122,7 @@ export default function InkOutwardDetailPage() {
   const totalWeight = entry.items.reduce((acc, i) => acc + i.total_weight_issued, 0);
   const within24 = isWithin24Hours(toDateInput(entry.outward_date), entry.outward_time ? String(entry.outward_time).slice(0, 5) : null);
   const canEdit = user.role === "admin" || (
-    (entry as any).created_by_id === user.id && within24
+    entry.created_by_id === user.id && within24
   );
 
   return (
@@ -178,7 +178,7 @@ export default function InkOutwardDetailPage() {
                 {entry.job_card_number && (<div className="bg-cream rounded-xl px-3 py-2.5"><p className="text-xs text-taupe">Job Card No.</p><p className="text-sm font-semibold text-charcoal">{entry.job_card_number}</p></div>)}
                 <div className="bg-cream rounded-xl px-3 py-2.5"><p className="text-xs text-taupe">Issued By</p><p className="text-sm font-semibold text-charcoal">{entry.issued_by || "—"}</p></div>
                 <div className="bg-cream rounded-xl px-3 py-2.5"><p className="text-xs text-taupe">Received By</p><p className="text-sm font-semibold text-charcoal">{entry.received_by || "—"}</p></div>
-                <div className="bg-cream rounded-xl px-3 py-2.5"><p className="text-xs text-taupe">Created By</p><p className="text-sm font-semibold text-charcoal">{(entry as any).created_by_name || "—"}</p></div>
+                <div className="bg-cream rounded-xl px-3 py-2.5"><p className="text-xs text-taupe">Created By</p><p className="text-sm font-semibold text-charcoal">{entry.created_by_name || "—"}</p></div>
                 <div className="bg-cream rounded-xl px-3 py-2.5"><p className="text-xs text-taupe">Total Issued</p><p className="text-sm font-semibold text-charcoal">{totalWeight.toLocaleString()} Kg</p></div>
               </div>
               {entry.remarks && (<div className="bg-cream/60 border border-sand rounded-xl px-4 py-3"><p className="text-xs text-taupe mb-0.5">Remarks</p><p className="text-sm text-charcoal">{entry.remarks}</p></div>)}

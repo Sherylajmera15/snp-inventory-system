@@ -21,8 +21,8 @@ export default function DeleteConfirmModal({ onConfirm, onClose }: DeleteConfirm
     setSubmitting(true);
     try {
       await onConfirm(password);
-    } catch (err: any) {
-      setError(err.response?.data?.detail || "Incorrect password");
+    } catch (err: unknown) {
+      setError((err as { response?: { data?: { detail?: string } } }).response?.data?.detail || "Incorrect password");
     } finally {
       setSubmitting(false);
     }
