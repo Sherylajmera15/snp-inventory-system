@@ -8,7 +8,6 @@ import DeleteConfirmModal from "@/components/DeleteConfirmModal";
 import api from "@/lib/api";
 import {
   LaminationInwardDetail,
-  LaminationFilmType,
   LAMINATION_FILM_TYPES,
   LAMINATION_RECEIVED_BY_OPTIONS,
 } from "@/types/lamination";
