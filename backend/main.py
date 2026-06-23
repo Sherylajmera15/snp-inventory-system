@@ -28,6 +28,12 @@ from routers.oil_outward_routes import router as oil_outward_router
 from routers.die_movement_routes import router as die_movement_router
 from routers.admin_settings_routes import router as admin_settings_router
 from routers.user_management_routes import router as user_management_router
+from routers.micro_routes import (
+    micro_router,
+    micro_plates_outward_router,
+    micro_chemicals_outward_router,
+    micro_films_outward_router,
+)
 
 app = FastAPI(title="SNP Inward API", version="1.0.0")
 
@@ -56,6 +62,9 @@ _MODULE_PREFIXES = [
     ("/api/packing-outward", "Packing Materials Outward"),
     ("/api/oil-outward", "Oil & Lubrication Outward"),
     ("/api/die-movement", "Die Movement"),
+    ("/api/micro-plates-outward", "Micro Plates Outward"),
+    ("/api/micro-chemicals-outward", "Micro Chemicals Outward"),
+    ("/api/micro-films-outward", "Micro Films Outward"),
     ("/api/paper", "Paper"),
     ("/api/ctp", "CTP Plates"),
     ("/api/ink", "Ink & Varnishes"),
@@ -65,6 +74,7 @@ _MODULE_PREFIXES = [
     ("/api/packing", "Packing Materials"),
     ("/api/oil", "Oil & Lubrication"),
     ("/api/dies", "Dies"),
+    ("/api/micro", "Micro Plates Films & Chemicals"),
 ]
 
 _SKIP_SUFFIXES = ("/export", "/suggestions", "/items")
@@ -162,6 +172,10 @@ app.include_router(oil_outward_router)
 app.include_router(die_movement_router)
 app.include_router(admin_settings_router)
 app.include_router(user_management_router)
+app.include_router(micro_router)
+app.include_router(micro_plates_outward_router)
+app.include_router(micro_chemicals_outward_router)
+app.include_router(micro_films_outward_router)
 
 
 @app.on_event("startup")

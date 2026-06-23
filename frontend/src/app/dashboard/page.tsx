@@ -9,7 +9,7 @@ import api from "@/lib/api";
 import {
   FileStack, Layers, Droplet, FlaskConical, PaintBucket,
   Package, Box, Fuel, Scissors, Search, X, Clock, TrendingUp, CalendarDays,
-  ArrowDownToLine, ArrowUpFromLine,
+  ArrowDownToLine, ArrowUpFromLine, Microscope,
 } from "lucide-react";
 
 // ─── Module config ────────────────────────────────────────────────────────────
@@ -24,6 +24,7 @@ const MODULES = [
   { key: "packing",     title: "Packing Materials", emoji: "📦", icon: Package,      href: "/packing" },
   { key: "oil",         title: "Oil & Lubrication", emoji: "🛢️", icon: Fuel,         href: "/oil" },
   { key: "dies",        title: "Dies",              emoji: "✂️", icon: Scissors,     href: "/dies" },
+  { key: "micro",       title: "Micro Plates/Films", emoji: "🔬", icon: Microscope,   href: "/micro" },
 ];
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -161,6 +162,11 @@ function buildModuleStats(key: string, data: Record<string, number | Record<stri
           { label: "Active (All)", value: num(v("active")) },
           { label: "Discontinued", value: num(v("discontinued")) },
         ];
+    case "micro": return [
+      { label: "Plates", value: num(v("plates_today") || v("plates_month")) },
+      { label: "Chemicals", value: num(v("chemicals_today") || v("chemicals_month")) },
+      { label: "Films", value: num(v("films_today") || v("films_month")) },
+    ];
     default: return [];
   }
 }
@@ -181,12 +187,14 @@ const MODULE_COLORS: Record<string, string> = {
   "Packing Materials": "bg-teal-50 text-teal-700 border-teal-200",
   "Oil & Lubrication": "bg-amber-50 text-amber-700 border-amber-200",
   "Dies": "bg-red-50 text-red-700 border-red-200",
+  "Micro Plates/Films": "bg-indigo-50 text-indigo-700 border-indigo-200",
 };
 
 const MODULE_EMOJIS: Record<string, string> = {
   "Paper": "📄", "CTP Plates": "🖨️", "Ink & Varnishes": "🎨",
   "Chemicals": "🧪", "Adhesives": "🏷️", "Consumables": "🔧",
   "Packing Materials": "📦", "Oil & Lubrication": "🛢️", "Dies": "✂️",
+  "Micro Plates/Films": "🔬",
 };
 
 interface SearchResult { module: string; id: number; date: string; supplier: string; description: string; href: string; }
@@ -347,6 +355,7 @@ const OUTWARD_MODULES = [
   { title: "Packing Materials",emoji: "📦", href: "/packing-outward",   available: true },
   { title: "Oil & Lubrication",emoji: "🛢️", href: "/oil-outward",       available: true },
   { title: "DIES Movement",    emoji: "✂️", href: "/dies-outward",      available: true },
+  { title: "Micro Plates/Films", emoji: "🔬", href: "/micro-outward",  available: true },
 ];
 
 function OutwardModuleGrid() {

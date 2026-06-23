@@ -790,6 +790,142 @@ export function exportOilOutward(
   buildPDF(moduleTitle, rangeLabel, cols, rows.map(r => cols.map(c => r[c])));
 }
 
+// ─── Micro Inward Export ─────────────────────────────────────────────────────
+
+interface MicroExportPlateItem {
+  item_number: unknown;
+  plate_size: unknown;
+  custom_length?: number | null;
+  custom_width?: number | null;
+  number_of_plates: unknown;
+}
+
+interface MicroExportChemicalItem {
+  item_number: unknown;
+  chemical_name: unknown;
+  manufacturer?: unknown;
+  item_total_quantity?: number | null;
+}
+
+interface MicroExportFilmItem {
+  item_number: unknown;
+  job_name: unknown;
+  film_length?: unknown;
+  film_width?: unknown;
+  film_type: unknown;
+  quantity: unknown;
+}
+
+export interface MicroExportEntry {
+  inward_date: string;
+  inward_time: string;
+  supplier_name: unknown;
+  invoice_number?: unknown;
+  received_by: unknown;
+  remarks?: unknown;
+  material_type: "Plates" | "Chemicals" | "Films";
+  plate_items?: MicroExportPlateItem[];
+  chemical_items?: MicroExportChemicalItem[];
+  film_items?: MicroExportFilmItem[];
+}
+
+export function exportMicroInward(entries: MicroExportEntry[], format: "pdf" | "excel", rangeLabel: string) {
+  const rows: Record<string, string>[] = [];
+
+  for (const e of entries) {
+    const base = {
+      "Date": fmtDate(e.inward_date),
+      "Time": fmtTime(e.inward_time),
+      "Supplier": s(e.supplier_name),
+      "Invoice": s(e.invoice_number),
+      "Received By": s(e.received_by),
+      "Remarks": s(e.remarks),
+      "Material Type": s(e.material_type),
+    };
+
+    if (e.material_type === "Plates" && e.plate_items?.length) {
+      for (const item of e.plate_items) {
+        rows.push({
+          ...base,
+          "Item #": s(item.item_number),
+          "Plate Size": s(item.plate_size),
+          "Custom L (mm)": item.custom_length != null ? s(item.custom_length) : "",
+          "Custom W (mm)": item.custom_width != null ? s(item.custom_width) : "",
+          "No. of Plates": s(item.number_of_plates),
+          "Chemical Name": "",
+          "Manufacturer": "",
+          "Chem Total Qty": "",
+          "Job Name": "",
+          "Film L (mm)": "",
+          "Film W (mm)": "",
+          "Film Type": "",
+          "Film Qty": "",
+        });
+      }
+    } else if (e.material_type === "Chemicals" && e.chemical_items?.length) {
+      for (const item of e.chemical_items) {
+        rows.push({
+          ...base,
+          "Item #": s(item.item_number),
+          "Plate Size": "",
+          "Custom L (mm)": "",
+          "Custom W (mm)": "",
+          "No. of Plates": "",
+          "Chemical Name": s(item.chemical_name),
+          "Manufacturer": s(item.manufacturer),
+          "Chem Total Qty": fmtNum(item.item_total_quantity, 3),
+          "Job Name": "",
+          "Film L (mm)": "",
+          "Film W (mm)": "",
+          "Film Type": "",
+          "Film Qty": "",
+        });
+      }
+    } else if (e.material_type === "Films" && e.film_items?.length) {
+      for (const item of e.film_items) {
+        rows.push({
+          ...base,
+          "Item #": s(item.item_number),
+          "Plate Size": "",
+          "Custom L (mm)": "",
+          "Custom W (mm)": "",
+          "No. of Plates": "",
+          "Chemical Name": "",
+          "Manufacturer": "",
+          "Chem Total Qty": "",
+          "Job Name": s(item.job_name),
+          "Film L (mm)": item.film_length != null ? s(item.film_length) : "",
+          "Film W (mm)": item.film_width != null ? s(item.film_width) : "",
+          "Film Type": s(item.film_type),
+          "Film Qty": s(item.quantity),
+        });
+      }
+    } else {
+      rows.push({
+        ...base,
+        "Item #": "",
+        "Plate Size": "",
+        "Custom L (mm)": "",
+        "Custom W (mm)": "",
+        "No. of Plates": "",
+        "Chemical Name": "",
+        "Manufacturer": "",
+        "Chem Total Qty": "",
+        "Job Name": "",
+        "Film L (mm)": "",
+        "Film W (mm)": "",
+        "Film Type": "",
+        "Film Qty": "",
+      });
+    }
+  }
+
+  if (!rows.length) { alert("No data to export for the selected range."); return; }
+  if (format === "excel") { buildExcel("Micro Inward", rangeLabel, rows); return; }
+  const cols = Object.keys(rows[0]);
+  buildPDF("Micro Inward", rangeLabel, cols, rows.map((r) => cols.map((c) => r[c])));
+}
+
 export function exportDieMovement(
   entries: {
     movement_date: string; movement_time: string | null;
