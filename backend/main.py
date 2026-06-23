@@ -34,6 +34,7 @@ from routers.micro_routes import (
     micro_chemicals_outward_router,
     micro_films_outward_router,
 )
+from routers.lamination_routes import lamination_router, lamination_outward_router
 
 app = FastAPI(title="SNP Inward API", version="1.0.0")
 
@@ -65,6 +66,7 @@ _MODULE_PREFIXES = [
     ("/api/micro-plates-outward", "Micro Plates Outward"),
     ("/api/micro-chemicals-outward", "Micro Chemicals Outward"),
     ("/api/micro-films-outward", "Micro Films Outward"),
+    ("/api/lamination-outward", "Lamination Film Outward"),
     ("/api/paper", "Paper"),
     ("/api/ctp", "CTP Plates"),
     ("/api/ink", "Ink & Varnishes"),
@@ -75,6 +77,7 @@ _MODULE_PREFIXES = [
     ("/api/oil", "Oil & Lubrication"),
     ("/api/dies", "Dies"),
     ("/api/micro", "Micro Plates Films & Chemicals"),
+    ("/api/lamination", "Lamination Film"),
 ]
 
 _SKIP_SUFFIXES = ("/export", "/suggestions", "/items")
@@ -176,6 +179,8 @@ app.include_router(micro_router)
 app.include_router(micro_plates_outward_router)
 app.include_router(micro_chemicals_outward_router)
 app.include_router(micro_films_outward_router)
+app.include_router(lamination_router)
+app.include_router(lamination_outward_router)
 
 
 @app.on_event("startup")

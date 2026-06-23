@@ -9,7 +9,7 @@ import api from "@/lib/api";
 import {
   FileStack, Layers, Droplet, FlaskConical, PaintBucket,
   Package, Box, Fuel, Scissors, Search, X, Clock, TrendingUp, CalendarDays,
-  ArrowDownToLine, ArrowUpFromLine, Microscope,
+  ArrowDownToLine, ArrowUpFromLine, Microscope, Film,
 } from "lucide-react";
 
 // ─── Module config ────────────────────────────────────────────────────────────
@@ -25,6 +25,7 @@ const MODULES = [
   { key: "oil",         title: "Oil & Lubrication", emoji: "🛢️", icon: Fuel,         href: "/oil" },
   { key: "dies",        title: "Dies",              emoji: "✂️", icon: Scissors,     href: "/dies" },
   { key: "micro",       title: "Micro Plates/Films", emoji: "🔬", icon: Microscope,   href: "/micro" },
+  { key: "lamination", title: "Lamination Film",    emoji: "🎞️", icon: Film,          href: "/lamination" },
 ];
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -166,6 +167,11 @@ function buildModuleStats(key: string, data: Record<string, number | Record<stri
       { label: "Plates", value: num(v("plates_today") || v("plates_month")) },
       { label: "Chemicals", value: num(v("chemicals_today") || v("chemicals_month")) },
       { label: "Films", value: num(v("films_today") || v("films_month")) },
+    ];
+    case "lamination": return [
+      { label: period === "today" ? "Entries Today" : "Entries Month", value: num(v(period === "today" ? "entries_today" : "entries_month")) },
+      { label: "Wt Received (kg)", value: (v(period === "today" ? "weight_received_today" : "weight_received_month")).toFixed(1) },
+      { label: "Wt Issued (kg)", value: (v(period === "today" ? "weight_issued_today" : "weight_issued_month")).toFixed(1) },
     ];
     default: return [];
   }
@@ -356,6 +362,7 @@ const OUTWARD_MODULES = [
   { title: "Oil & Lubrication",emoji: "🛢️", href: "/oil-outward",       available: true },
   { title: "DIES Movement",    emoji: "✂️", href: "/dies-outward",      available: true },
   { title: "Micro Plates/Films", emoji: "🔬", href: "/micro-outward",  available: true },
+  { title: "Lamination Film",   emoji: "🎞️", href: "/lamination-outward", available: true },
 ];
 
 function OutwardModuleGrid() {

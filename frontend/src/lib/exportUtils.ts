@@ -950,3 +950,57 @@ export function exportDieMovement(
   const cols = Object.keys(rows[0]);
   buildPDF(moduleTitle, rangeLabel, cols, rows.map(r => cols.map(c => r[c])));
 }
+
+export interface LaminationExportEntry {
+  inward_date: string;
+  inward_time?: unknown;
+  supplier_name: unknown;
+  invoice_number?: unknown;
+  received_by: unknown;
+  film_type: unknown;
+  custom_type?: unknown;
+  film_length?: unknown;
+  film_width?: unknown;
+  remarks?: unknown;
+  rolls?: { roll_number: unknown; original_weight: unknown; remaining_weight: unknown; is_consumed: unknown }[];
+}
+
+export function exportLaminationInward(entries: LaminationExportEntry[], format: "pdf" | "excel", rangeLabel: string) {
+  // Max roll count among entries with ≤5 rolls — determines how many individual columns to add
+  const maxSmallRolls = Math.max(0, ...entries.map((e) => {
+    const n = e.rolls?.length ?? 0;
+    return n <= 5 ? n : 0;
+  }));
+
+  const rows: Record<string, string>[] = entries.map((e) => {
+    const rolls = e.rolls ?? [];
+    const totalWt = rolls.reduce((sum, r) => sum + Number(r.original_weight || 0), 0);
+    const isSmall = rolls.length <= 5;
+    const row: Record<string, string> = {
+      "Date": fmtDate(e.inward_date),
+      "Time": fmtTime(e.inward_time as string),
+      "Supplier": s(e.supplier_name),
+      "Invoice": s(e.invoice_number),
+      "Received By": s(e.received_by),
+      "Film Type": e.film_type === "OTHER" && e.custom_type ? s(e.custom_type) : s(e.film_type),
+      "Length (mm)": e.film_length != null ? s(e.film_length) : "",
+      "Width (mm)": e.film_width != null ? s(e.film_width) : "",
+      "No. of Rolls": String(rolls.length),
+    };
+    // Individual roll weight columns — filled only for entries with ≤5 rolls
+    if (maxSmallRolls > 0) {
+      for (let i = 1; i <= maxSmallRolls; i++) {
+        const r = isSmall ? rolls.find((r) => Number(r.roll_number) === i) : undefined;
+        row[`Roll ${i} Wt (kg)`] = r ? Number(r.original_weight).toFixed(3) : "";
+      }
+    }
+    row["Total Wt (kg)"] = totalWt ? totalWt.toFixed(3) : "";
+    row["Remarks"] = s(e.remarks);
+    return row;
+  });
+
+  if (!rows.length) { alert("No data to export."); return; }
+  if (format === "excel") { buildExcel("Lamination Film Inward", rangeLabel, rows); return; }
+  const cols = Object.keys(rows[0]);
+  buildPDF("Lamination Film Inward", rangeLabel, cols, rows.map(r => cols.map(c => r[c])));
+}

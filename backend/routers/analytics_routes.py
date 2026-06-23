@@ -211,6 +211,51 @@ def get_dashboard(current_user: dict = Depends(get_current_user)):
     """, (ms,))
     r["dies_month"] = {"dies_added": c.fetchone()[0] or 0}
 
+    # ── Micro ──
+    c.execute(
+        "SELECT COUNT(*) FROM microinward WHERE inward_date::date = %s AND material_type = 'Plates'", (today,)
+    )
+    r["micro_today"] = {"plates_today": c.fetchone()[0] or 0}
+    c.execute(
+        "SELECT COUNT(*) FROM microinward WHERE inward_date::date = %s AND material_type = 'Chemicals'", (today,)
+    )
+    r["micro_today"]["chemicals_today"] = c.fetchone()[0] or 0
+    c.execute(
+        "SELECT COUNT(*) FROM microinward WHERE inward_date::date = %s AND material_type = 'Films'", (today,)
+    )
+    r["micro_today"]["films_today"] = c.fetchone()[0] or 0
+
+    c.execute(
+        "SELECT COUNT(*) FROM microinward WHERE inward_date >= %s AND material_type = 'Plates'", (ms,)
+    )
+    r["micro_month"] = {"plates_month": c.fetchone()[0] or 0}
+    c.execute(
+        "SELECT COUNT(*) FROM microinward WHERE inward_date >= %s AND material_type = 'Chemicals'", (ms,)
+    )
+    r["micro_month"]["chemicals_month"] = c.fetchone()[0] or 0
+    c.execute(
+        "SELECT COUNT(*) FROM microinward WHERE inward_date >= %s AND material_type = 'Films'", (ms,)
+    )
+    r["micro_month"]["films_month"] = c.fetchone()[0] or 0
+
+    # ── Lamination Film ──
+    c.execute("SELECT COUNT(*) FROM laminationfilminward WHERE inward_date::date = %s", (today,))
+    lam_entries_today = c.fetchone()[0] or 0
+    c.execute("SELECT COALESCE(SUM(r.original_weight), 0) FROM laminationfilmroll r JOIN laminationfilminward i ON i.id = r.inward_id WHERE i.inward_date::date = %s", (today,))
+    lam_weight_today = float(c.fetchone()[0] or 0)
+    c.execute("SELECT COALESCE(SUM(quantity_issued), 0) FROM laminationfilmoutward WHERE outward_date::date = %s", (today,))
+    lam_issued_today = float(c.fetchone()[0] or 0)
+
+    c.execute("SELECT COUNT(*) FROM laminationfilminward WHERE inward_date >= %s", (ms,))
+    lam_entries_month = c.fetchone()[0] or 0
+    c.execute("SELECT COALESCE(SUM(r.original_weight), 0) FROM laminationfilmroll r JOIN laminationfilminward i ON i.id = r.inward_id WHERE i.inward_date >= %s", (ms,))
+    lam_weight_month = float(c.fetchone()[0] or 0)
+    c.execute("SELECT COALESCE(SUM(quantity_issued), 0) FROM laminationfilmoutward WHERE outward_date >= %s", (ms,))
+    lam_issued_month = float(c.fetchone()[0] or 0)
+
+    r["lamination_today"] = {"entries_today": lam_entries_today, "weight_received_today": lam_weight_today, "weight_issued_today": lam_issued_today}
+    r["lamination_month"] = {"entries_month": lam_entries_month, "weight_received_month": lam_weight_month, "weight_issued_month": lam_issued_month}
+
     conn.close()
     return r
 
@@ -233,6 +278,8 @@ def get_recent(limit: int = 20, current_user: dict = Depends(get_current_user)):
         ("Packing Materials", "PackingMaterialInward", "id", "inward_date", "supplier_name", "created_at", "/packing/"),
         ("Oil & Lubrication", "OilInward", "id", "inward_date", "supplier_name", "created_at", "/oil/"),
         ("Dies", "DiesInward", "id", "inward_date", "supplier_name", "created_at", "/dies/"),
+        ("Micro Plates/Films/Chem", "microinward", "id", "inward_date", "supplier_name", "created_at", "/micro/"),
+        ("Lamination Film", "laminationfilminward", "id", "inward_date", "supplier_name", "created_at", "/lamination/"),
     ]
 
     for module, table, id_col, date_col, supplier_col, created_col, href_prefix in queries:
@@ -429,6 +476,21 @@ def global_search(
     for row in c.fetchall():
         desc = " · ".join(filter(None, [row[3], row[4], row[5]]))
         add("Dies", row[0], row[1], row[2], desc, f"/dies/{row[0]}")
+
+    # Lamination Film
+    c.execute("""
+        SELECT i.id, i.inward_date, i.supplier_name, i.film_type, i.custom_type, i.film_length, i.film_width
+        FROM laminationfilminward i
+        WHERE i.supplier_name ILIKE %s OR i.invoice_number ILIKE %s
+           OR i.film_type ILIKE %s OR i.custom_type ILIKE %s OR i.remarks ILIKE %s
+           OR i.inward_date::text ILIKE %s
+        ORDER BY i.inward_date DESC LIMIT 5
+    """, (like, like, like, like, like, like))
+    for row in c.fetchall():
+        type_str = row[4] if row[4] else row[3]
+        size_str = f"{row[5]}×{row[6]}" if row[5] and row[6] else ""
+        desc = " · ".join(filter(None, [type_str, size_str]))
+        add("Lamination Film", row[0], row[1], row[2], desc, f"/lamination/{row[0]}")
 
     conn.close()
     return results
