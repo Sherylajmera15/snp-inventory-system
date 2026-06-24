@@ -38,8 +38,7 @@ export default function LaminationNewPage() {
   const [remarks, setRemarks] = useState("");
   const [filmType, setFilmType] = useState<LaminationFilmType | "">("");
   const [customType, setCustomType] = useState("");
-  const [filmLength, setFilmLength] = useState("");
-  const [filmWidth, setFilmWidth] = useState("");
+  const [rollSize, setRollSize] = useState("");
   const [rollCount, setRollCount] = useState("1");
   const [rollWeights, setRollWeights] = useState<string[]>([""]);
 
@@ -111,8 +110,7 @@ export default function LaminationNewPage() {
         remarks: remarks.trim() || null,
         film_type: filmType,
         custom_type: filmType === "OTHER" ? customType.trim() : null,
-        film_length: filmLength ? Number(filmLength) : null,
-        film_width: filmWidth ? Number(filmWidth) : null,
+        roll_size: rollSize.trim() || null,
         rolls: rollWeights.map((w, i) => ({ roll_number: i + 1, weight: Number(w) })),
       };
       const res = await api.post("/api/lamination", payload);
@@ -285,29 +283,20 @@ export default function LaminationNewPage() {
             </div>
           )}
 
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className={labelClass}>Film Length (mm) <span className="text-taupe">(optional)</span></label>
-              <input
-                type="number"
-                value={filmLength}
-                onChange={(e) => setFilmLength(e.target.value)}
-                onWheel={(e) => e.currentTarget.blur()}
-                className={inputClass}
-                placeholder="e.g. 3000"
-              />
-            </div>
-            <div>
-              <label className={labelClass}>Film Width (mm) <span className="text-taupe">(optional)</span></label>
-              <input
-                type="number"
-                value={filmWidth}
-                onChange={(e) => setFilmWidth(e.target.value)}
-                onWheel={(e) => e.currentTarget.blur()}
-                className={inputClass}
-                placeholder="e.g. 1000"
-              />
-            </div>
+          <div>
+            <label className={labelClass}>Roll Size <span className="text-taupe text-xs">(optional)</span></label>
+            <input
+              type="text"
+              value={rollSize}
+              onChange={(e) => setRollSize(e.target.value)}
+              className={inputClass}
+              placeholder="e.g. 12 inch, 18 inch, 24 inch"
+              list="roll-size-list"
+              autoComplete="off"
+            />
+            <datalist id="roll-size-list">
+              {["12 inch","18 inch","24 inch","30 inch","36 inch","42 inch","48 inch"].map(s => <option key={s} value={s} />)}
+            </datalist>
           </div>
         </div>
 

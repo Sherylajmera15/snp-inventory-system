@@ -22,8 +22,7 @@ export interface LaminationInwardListItem {
   received_by: string;
   film_type: string;
   custom_type?: string | null;
-  film_length?: number | null;
-  film_width?: number | null;
+  roll_size?: string | null;
   roll_count: number;
   total_weight: number;
   roll_weights: number[];
@@ -39,8 +38,7 @@ export interface LaminationInwardDetail {
   received_by: string;
   film_type: string;
   custom_type?: string | null;
-  film_length?: number | null;
-  film_width?: number | null;
+  roll_size?: string | null;
   remarks?: string | null;
   created_by_id?: number | null;
   created_by_name?: string | null;
@@ -54,8 +52,7 @@ export interface LaminationSuggestions {
 export interface LaminationStockItem {
   film_type: string;
   custom_type?: string | null;
-  film_length?: number | null;
-  film_width?: number | null;
+  roll_size?: string | null;
   roll_count: number;
   total_weight: number;
 }
@@ -79,8 +76,7 @@ export interface LaminationOutwardListItem {
   issued_by?: string | null;
   film_type: string;
   custom_type?: string | null;
-  film_length?: number | null;
-  film_width?: number | null;
+  roll_size?: string | null;
   quantity_issued: number;
   remarks?: string | null;
 }
@@ -93,12 +89,11 @@ export interface LaminationOutwardDetail {
   issued_by?: string | null;
   film_type: string;
   custom_type?: string | null;
-  film_length?: number | null;
-  film_width?: number | null;
+  roll_size?: string | null;
   quantity_issued: number;
   remarks?: string | null;
   created_by_id?: number | null;
   created_by_name?: string | null;
   items: { id: number; roll_id: number; roll_number: number; weight_taken: number }[];
-  adjustments: { id: number; film_type: string; custom_type?: string | null; quantity: number; reason?: string | null }[];
+  adjustments: { id: number; film_type: string; custom_type?: string | null; roll_size?: string | null; quantity: number; reason?: string | null }[];
 }

@@ -27,8 +27,7 @@ class LaminationInwardCreate(BaseModel):
     remarks: Optional[str] = None
     film_type: str  # PVC | BOPP | SILVER | HOLOGRAPHIC | OTHER
     custom_type: Optional[str] = None
-    film_length: Optional[float] = None
-    film_width: Optional[float] = None
+    roll_size: Optional[str] = None
     rolls: List[RollWeightInput]
 
 
@@ -39,8 +38,7 @@ class LaminationOutwardCreate(BaseModel):
     issued_by: Optional[str] = None
     film_type: str
     custom_type: Optional[str] = None
-    film_length: Optional[float] = None
-    film_width: Optional[float] = None
+    roll_size: Optional[str] = None
     quantity_issued: float
     remarks: Optional[str] = None
     force_adjustment: bool = False
@@ -81,7 +79,7 @@ def _fetch_inward_detail(inward_id: int) -> dict:
         cursor.execute(
             """
             SELECT i.id, i.inward_date, i.inward_time, i.supplier_name, i.invoice_number,
-                   i.received_by, i.remarks, i.film_type, i.custom_type, i.film_length, i.film_width,
+                   i.received_by, i.remarks, i.film_type, i.custom_type, i.roll_size,
                    i.created_by, COALESCE(u.full_name, u.username)
             FROM laminationfilminward i
             LEFT JOIN users u ON u.id = i.created_by
@@ -103,10 +101,9 @@ def _fetch_inward_detail(inward_id: int) -> dict:
             "remarks": row[6],
             "film_type": row[7],
             "custom_type": row[8],
-            "film_length": float(row[9]) if row[9] is not None else None,
-            "film_width": float(row[10]) if row[10] is not None else None,
-            "created_by": row[11],
-            "created_by_name": row[12],
+            "roll_size": row[9],
+            "created_by": row[10],
+            "created_by_name": row[11],
         }
 
         cursor.execute(
@@ -140,7 +137,7 @@ def _fetch_outward_detail(outward_id: int) -> dict:
         cursor.execute(
             """
             SELECT o.id, o.outward_date, o.outward_time, o.receiver_name, o.issued_by,
-                   o.film_type, o.custom_type, o.film_length, o.film_width, o.quantity_issued,
+                   o.film_type, o.custom_type, o.roll_size, o.quantity_issued,
                    o.remarks, o.created_by, COALESCE(u.full_name, u.username)
             FROM laminationfilmoutward o
             LEFT JOIN users u ON u.id = o.created_by
@@ -160,12 +157,11 @@ def _fetch_outward_detail(outward_id: int) -> dict:
             "issued_by": row[4],
             "film_type": row[5],
             "custom_type": row[6],
-            "film_length": float(row[7]) if row[7] is not None else None,
-            "film_width": float(row[8]) if row[8] is not None else None,
-            "quantity_issued": float(row[9]) if row[9] is not None else None,
-            "remarks": row[10],
-            "created_by": row[11],
-            "created_by_name": row[12],
+            "roll_size": row[7],
+            "quantity_issued": float(row[8]) if row[8] is not None else None,
+            "remarks": row[9],
+            "created_by": row[10],
+            "created_by_name": row[11],
         }
 
         cursor.execute(
@@ -190,7 +186,7 @@ def _fetch_outward_detail(outward_id: int) -> dict:
 
         cursor.execute(
             """
-            SELECT id, film_type, custom_type, film_length, film_width, quantity, reason
+            SELECT id, film_type, custom_type, roll_size, quantity, reason
             FROM laminationfilmadjustment
             WHERE outward_id = %s
             """,
@@ -201,10 +197,9 @@ def _fetch_outward_detail(outward_id: int) -> dict:
                 "id": r[0],
                 "film_type": r[1],
                 "custom_type": r[2],
-                "film_length": float(r[3]) if r[3] is not None else None,
-                "film_width": float(r[4]) if r[4] is not None else None,
-                "quantity": float(r[5]) if r[5] is not None else None,
-                "reason": r[6],
+                "roll_size": r[3],
+                "quantity": float(r[4]) if r[4] is not None else None,
+                "reason": r[5],
             }
             for r in cursor.fetchall()
         ]
@@ -313,25 +308,24 @@ def get_dashboard(current_user: dict = Depends(get_current_user)):
         # Stock by type
         c.execute(
             """
-            SELECT i.film_type, i.custom_type, i.film_length, i.film_width,
+            SELECT i.film_type, i.custom_type, i.roll_size,
                    COUNT(r.id) FILTER (WHERE r.is_consumed = FALSE) AS roll_count,
                    COALESCE(SUM(r.remaining_weight) FILTER (WHERE r.is_consumed = FALSE), 0) AS total_weight
             FROM laminationfilmroll r
             JOIN laminationfilminward i ON i.id = r.inward_id
-            GROUP BY i.film_type, i.custom_type, i.film_length, i.film_width
+            GROUP BY i.film_type, i.custom_type, i.roll_size
             HAVING COALESCE(SUM(r.remaining_weight) FILTER (WHERE r.is_consumed = FALSE), 0) > 0
                OR COUNT(r.id) FILTER (WHERE r.is_consumed = FALSE) > 0
-            ORDER BY i.film_type, i.film_length NULLS LAST, i.film_width NULLS LAST
+            ORDER BY i.film_type, i.roll_size NULLS LAST
             """
         )
         stock_by_type = [
             {
                 "film_type": row[0],
                 "custom_type": row[1],
-                "film_length": float(row[2]) if row[2] is not None else None,
-                "film_width": float(row[3]) if row[3] is not None else None,
-                "roll_count": row[4] or 0,
-                "total_weight": float(row[5] or 0),
+                "roll_size": row[2],
+                "roll_count": row[3] or 0,
+                "total_weight": float(row[4] or 0),
             }
             for row in c.fetchall()
         ]
@@ -411,7 +405,7 @@ def list_inward(
         cursor.execute(
             f"""
             SELECT i.id, i.inward_date, i.inward_time, i.supplier_name, i.invoice_number,
-                   i.received_by, i.film_type, i.custom_type, i.film_length, i.film_width, i.remarks,
+                   i.received_by, i.film_type, i.custom_type, i.roll_size, i.remarks,
                    COUNT(r.id) AS roll_count,
                    COALESCE(SUM(r.original_weight), 0) AS total_weight,
                    ARRAY_AGG(r.original_weight ORDER BY r.roll_number) FILTER (WHERE r.id IS NOT NULL) AS roll_weights
@@ -419,7 +413,7 @@ def list_inward(
             LEFT JOIN laminationfilmroll r ON r.inward_id = i.id
             {where}
             GROUP BY i.id, i.inward_date, i.inward_time, i.supplier_name, i.invoice_number,
-                     i.received_by, i.film_type, i.custom_type, i.film_length, i.film_width, i.remarks
+                     i.received_by, i.film_type, i.custom_type, i.roll_size, i.remarks
             ORDER BY i.inward_date DESC, i.inward_time DESC, i.id DESC
             """,
             params,
@@ -435,12 +429,11 @@ def list_inward(
                 "received_by": row[5],
                 "film_type": row[6],
                 "custom_type": row[7],
-                "film_length": float(row[8]) if row[8] is not None else None,
-                "film_width": float(row[9]) if row[9] is not None else None,
-                "remarks": row[10],
-                "roll_count": row[11] or 0,
-                "total_weight": float(row[12] or 0),
-                "roll_weights": [float(w) for w in row[13]] if row[13] else [],
+                "roll_size": row[8],
+                "remarks": row[9],
+                "roll_count": row[10] or 0,
+                "total_weight": float(row[11] or 0),
+                "roll_weights": [float(w) for w in row[12]] if row[12] else [],
             }
             for row in rows
         ]
@@ -480,8 +473,8 @@ def create_inward(
             """
             INSERT INTO laminationfilminward
                 (inward_date, inward_time, supplier_name, invoice_number, received_by, remarks,
-                 film_type, custom_type, film_length, film_width, created_by)
-            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                 film_type, custom_type, roll_size, created_by)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
             RETURNING id
             """,
             (
@@ -493,8 +486,7 @@ def create_inward(
                 body.remarks.strip() if body.remarks else None,
                 body.film_type.strip(),
                 body.custom_type.strip() if body.custom_type else None,
-                body.film_length,
-                body.film_width,
+                body.roll_size.strip() if body.roll_size else None,
                 current_user["id"],
             ),
         )
@@ -549,7 +541,7 @@ def update_inward(
             UPDATE laminationfilminward
             SET supplier_name=%s, invoice_number=%s, received_by=%s, remarks=%s,
                 inward_date=%s, inward_time=%s, film_type=%s, custom_type=%s,
-                film_length=%s, film_width=%s
+                roll_size=%s
             WHERE id=%s
             """,
             (
@@ -561,8 +553,7 @@ def update_inward(
                 body.inward_time,
                 body.film_type.strip(),
                 body.custom_type.strip() if body.custom_type else None,
-                body.film_length,
-                body.film_width,
+                body.roll_size.strip() if body.roll_size else None,
                 inward_id,
             ),
         )
@@ -613,15 +604,15 @@ def get_stock(current_user: dict = Depends(get_current_user)):
         cursor = conn.cursor()
         cursor.execute(
             """
-            SELECT i.film_type, i.custom_type, i.film_length, i.film_width,
+            SELECT i.film_type, i.custom_type, i.roll_size,
                    COUNT(r.id) FILTER (WHERE r.is_consumed = FALSE) AS roll_count,
                    COALESCE(SUM(r.remaining_weight) FILTER (WHERE r.is_consumed = FALSE), 0) AS total_weight
             FROM laminationfilmroll r
             JOIN laminationfilminward i ON i.id = r.inward_id
-            GROUP BY i.film_type, i.custom_type, i.film_length, i.film_width
+            GROUP BY i.film_type, i.custom_type, i.roll_size
             HAVING COALESCE(SUM(r.remaining_weight) FILTER (WHERE r.is_consumed = FALSE), 0) > 0
                OR COUNT(r.id) FILTER (WHERE r.is_consumed = FALSE) > 0
-            ORDER BY i.film_type, i.film_length NULLS LAST, i.film_width NULLS LAST
+            ORDER BY i.film_type, i.roll_size NULLS LAST
             """
         )
         rows = cursor.fetchall()
@@ -629,10 +620,9 @@ def get_stock(current_user: dict = Depends(get_current_user)):
             {
                 "film_type": row[0],
                 "custom_type": row[1],
-                "film_length": float(row[2]) if row[2] is not None else None,
-                "film_width": float(row[3]) if row[3] is not None else None,
-                "roll_count": row[4] or 0,
-                "total_weight": float(row[5] or 0),
+                "roll_size": row[2],
+                "roll_count": row[3] or 0,
+                "total_weight": float(row[4] or 0),
             }
             for row in rows
         ]
@@ -672,7 +662,7 @@ def list_outward(
         cursor.execute(
             f"""
             SELECT id, outward_date, outward_time, receiver_name, issued_by,
-                   film_type, custom_type, film_length, film_width, quantity_issued, remarks
+                   film_type, custom_type, roll_size, quantity_issued, remarks
             FROM laminationfilmoutward
             {where}
             ORDER BY outward_date DESC, outward_time DESC, id DESC
@@ -689,10 +679,9 @@ def list_outward(
                 "issued_by": row[4],
                 "film_type": row[5],
                 "custom_type": row[6],
-                "film_length": float(row[7]) if row[7] is not None else None,
-                "film_width": float(row[8]) if row[8] is not None else None,
-                "quantity_issued": float(row[9]) if row[9] is not None else None,
-                "remarks": row[10],
+                "roll_size": row[7],
+                "quantity_issued": float(row[8]) if row[8] is not None else None,
+                "remarks": row[9],
             }
             for row in rows
         ]
@@ -722,11 +711,10 @@ def create_outward(
             WHERE r.is_consumed = FALSE AND r.remaining_weight > 0
               AND i.film_type = %s
               AND (i.custom_type IS NOT DISTINCT FROM %s)
-              AND (i.film_length IS NOT DISTINCT FROM %s)
-              AND (i.film_width IS NOT DISTINCT FROM %s)
+              AND (i.roll_size IS NOT DISTINCT FROM %s)
             ORDER BY i.inward_date ASC, i.id ASC, r.roll_number ASC
             """,
-            (body.film_type, body.custom_type, body.film_length, body.film_width),
+            (body.film_type, body.custom_type, body.roll_size),
         )
         available_rolls = cursor.fetchall()
         total_available = sum(float(r[1]) for r in available_rolls)
@@ -741,8 +729,8 @@ def create_outward(
             """
             INSERT INTO laminationfilmoutward
                 (outward_date, outward_time, receiver_name, issued_by, film_type, custom_type,
-                 film_length, film_width, quantity_issued, remarks, created_by)
-            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                 roll_size, quantity_issued, remarks, created_by)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
             RETURNING id
             """,
             (
@@ -752,8 +740,7 @@ def create_outward(
                 body.issued_by,
                 body.film_type,
                 body.custom_type,
-                body.film_length,
-                body.film_width,
+                body.roll_size,
                 body.quantity_issued,
                 body.remarks,
                 current_user["id"],
@@ -783,15 +770,14 @@ def create_outward(
             cursor.execute(
                 """
                 INSERT INTO laminationfilmadjustment
-                    (outward_id, film_type, custom_type, film_length, film_width, quantity, reason)
-                VALUES (%s, %s, %s, %s, %s, %s, %s)
+                    (outward_id, film_type, custom_type, roll_size, quantity, reason)
+                VALUES (%s, %s, %s, %s, %s, %s)
                 """,
                 (
                     outward_id,
                     body.film_type,
                     body.custom_type,
-                    body.film_length,
-                    body.film_width,
+                    body.roll_size,
                     round(remaining_to_issue, 3),
                     "Auto-created due to stock shortage",
                 ),

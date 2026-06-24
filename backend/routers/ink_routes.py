@@ -400,6 +400,60 @@ def export_ink(
     return [_fetch_detail(eid) for eid in ids]
 
 
+@router.get("/stock")
+def get_ink_stock(current_user: dict = Depends(get_current_user)):
+    """Live ink/varnish stock grouped by item_type, category, color, pantone_number, varnish_type."""
+    conn = get_connection()
+    try:
+        c = conn.cursor()
+        c.execute("""
+            SELECT
+                ivi.item_type,
+                ivi.category,
+                ivi.color,
+                ivi.pantone_number,
+                ivi.varnish_type,
+                COALESCE(SUM(ivi.item_total_weight), 0)
+                + COALESCE((
+                    SELECT SUM(adj.quantity_kg)
+                    FROM InkAdjustmentEntries adj
+                    WHERE adj.item_type = ivi.item_type
+                      AND adj.category = ivi.category
+                      AND adj.color IS NOT DISTINCT FROM ivi.color
+                      AND adj.pantone_number IS NOT DISTINCT FROM ivi.pantone_number
+                      AND adj.varnish_type IS NOT DISTINCT FROM ivi.varnish_type
+                ), 0)
+                - COALESCE((
+                    SELECT SUM(ioi.total_weight_issued)
+                    FROM InkOutwardItems ioi
+                    WHERE ioi.item_type = ivi.item_type
+                      AND ioi.category = ivi.category
+                      AND ioi.color IS NOT DISTINCT FROM ivi.color
+                      AND ioi.pantone_number IS NOT DISTINCT FROM ivi.pantone_number
+                      AND ioi.varnish_type IS NOT DISTINCT FROM ivi.varnish_type
+                ), 0)
+                AS available_kg
+            FROM InkVarnishItems ivi
+            GROUP BY ivi.item_type, ivi.category, ivi.color, ivi.pantone_number, ivi.varnish_type
+            ORDER BY ivi.item_type, ivi.category, ivi.color, ivi.pantone_number, ivi.varnish_type
+        """)
+        rows = c.fetchall()
+        return [
+            {
+                "item_type": r[0],
+                "category": r[1],
+                "color": r[2],
+                "pantone_number": r[3],
+                "varnish_type": r[4],
+                "available_kg": round(float(r[5]), 2),
+            }
+            for r in rows
+            if float(r[5]) > 0
+        ]
+    finally:
+        conn.close()
+
+
 @router.get("/{ink_id}", response_model=InkInwardDetail)
 def get_ink(ink_id: int, current_user: dict = Depends(get_current_user)):
     return _fetch_detail(ink_id)

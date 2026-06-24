@@ -470,6 +470,56 @@ def export_dies(
     return [_fetch_detail(eid) for eid in ids]
 
 
+@router.get("/stock")
+def get_dies_stock(current_user: dict = Depends(get_current_user)):
+    """Dies asset summary: active/discontinued counts and full item list with latest location."""
+    conn = get_connection()
+    try:
+        c = conn.cursor()
+
+        c.execute("SELECT COUNT(*) FROM DieItems WHERE status = 'Active'")
+        active_count = c.fetchone()[0]
+
+        c.execute("SELECT COUNT(*) FROM DieItems WHERE status = 'Discontinued'")
+        discontinued_count = c.fetchone()[0]
+
+        c.execute("""
+            SELECT
+                di.id,
+                di.die_number,
+                di.job_name,
+                di.status,
+                di.storage_location,
+                (
+                    SELECT dm.current_location
+                    FROM DieMovements dm
+                    WHERE dm.die_item_id = di.id
+                    ORDER BY dm.id DESC
+                    LIMIT 1
+                ) AS latest_location
+            FROM DieItems di
+            ORDER BY di.status, di.die_number
+        """)
+        rows = c.fetchall()
+        items = [
+            {
+                "die_number": r[1],
+                "job_name": r[2],
+                "status": r[3],
+                "current_location": r[5] if r[5] is not None else r[4],
+            }
+            for r in rows
+        ]
+
+        return {
+            "active_count": active_count,
+            "discontinued_count": discontinued_count,
+            "items": items,
+        }
+    finally:
+        conn.close()
+
+
 @router.get("/{inward_id}", response_model=DiesInwardDetail)
 def get_dies(inward_id: int, current_user: dict = Depends(get_current_user)):
     return _fetch_detail(inward_id)

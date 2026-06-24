@@ -499,6 +499,140 @@ def export_packing(
     return [_fetch_detail(eid) for eid in ids]
 
 
+@router.get("/stock")
+def get_packing_stock(current_user: dict = Depends(get_current_user)):
+    """Live packing material stock across all sub-types (boxes, rolls, sutli)."""
+    conn = get_connection()
+    try:
+        c = conn.cursor()
+        results = []
+
+        # Printed Corrugated Boxes — grouped by box size (length x width x height)
+        c.execute("""
+            SELECT
+                bs.length, bs.width, bs.height,
+                COALESCE(SUM(bs.num_boxes), 0)
+                + COALESCE((
+                    SELECT SUM(adj.quantity)
+                    FROM PackingAdjustmentEntries adj
+                    WHERE adj.material_type = 'Printed Corrugated Boxes'
+                      AND adj.box_size = (bs.length::text || 'x' || bs.width::text || 'x' || bs.height::text)
+                ), 0)
+                - COALESCE((
+                    SELECT SUM(poi.quantity_issued)
+                    FROM PackingOutwardItems poi
+                    WHERE poi.material_type = 'Printed Corrugated Boxes'
+                      AND poi.box_size = (bs.length::text || 'x' || bs.width::text || 'x' || bs.height::text)
+                ), 0)
+                AS available_qty
+            FROM PMBoxSizes bs
+            JOIN PackingMaterialItems pmi ON pmi.id = bs.item_id
+            WHERE pmi.material_type = 'Printed Corrugated Boxes'
+            GROUP BY bs.length, bs.width, bs.height
+            ORDER BY bs.length, bs.width, bs.height
+        """)
+        for r in c.fetchall():
+            qty = float(r[3])
+            if qty > 0:
+                def _fmt(v):
+                    return str(int(v)) if float(v) == int(float(v)) else str(float(v))
+                box_label = f"{_fmt(r[0])}x{_fmt(r[1])}x{_fmt(r[2])}"
+                results.append({
+                    "material_type": "Printed Corrugated Boxes",
+                    "sub_label": box_label,
+                    "unit": "boxes",
+                    "available_qty": round(qty, 2),
+                })
+
+        # Plastic Roll — weight in kg
+        c.execute("""
+            SELECT
+                COALESCE(SUM(prw.weight), 0)
+                + COALESCE((
+                    SELECT SUM(adj.quantity)
+                    FROM PackingAdjustmentEntries adj
+                    WHERE adj.material_type = 'Plastic Roll'
+                ), 0)
+                - COALESCE((
+                    SELECT SUM(poi.quantity_issued)
+                    FROM PackingOutwardItems poi
+                    WHERE poi.material_type = 'Plastic Roll'
+                ), 0)
+                AS available_qty
+            FROM PMRollWeights prw
+            JOIN PackingMaterialItems pmi ON pmi.id = prw.item_id
+            WHERE pmi.material_type = 'Plastic Roll'
+        """)
+        row = c.fetchone()
+        if row and float(row[0]) > 0:
+            results.append({
+                "material_type": "Plastic Roll",
+                "sub_label": "",
+                "unit": "kg",
+                "available_qty": round(float(row[0]), 2),
+            })
+
+        # Shrink Wrap Film — weight in kg
+        c.execute("""
+            SELECT
+                COALESCE(SUM(prw.weight), 0)
+                + COALESCE((
+                    SELECT SUM(adj.quantity)
+                    FROM PackingAdjustmentEntries adj
+                    WHERE adj.material_type = 'Shrink Wrap Film'
+                ), 0)
+                - COALESCE((
+                    SELECT SUM(poi.quantity_issued)
+                    FROM PackingOutwardItems poi
+                    WHERE poi.material_type = 'Shrink Wrap Film'
+                ), 0)
+                AS available_qty
+            FROM PMRollWeights prw
+            JOIN PackingMaterialItems pmi ON pmi.id = prw.item_id
+            WHERE pmi.material_type = 'Shrink Wrap Film'
+        """)
+        row = c.fetchone()
+        if row and float(row[0]) > 0:
+            results.append({
+                "material_type": "Shrink Wrap Film",
+                "sub_label": "",
+                "unit": "kg",
+                "available_qty": round(float(row[0]), 2),
+            })
+
+        # Sutli — bundle quantity
+        c.execute("""
+            SELECT
+                COALESCE(SUM(sg.bundle_quantity), 0)
+                + COALESCE((
+                    SELECT SUM(adj.quantity)
+                    FROM PackingAdjustmentEntries adj
+                    WHERE adj.material_type = 'Sutli'
+                ), 0)
+                - COALESCE((
+                    SELECT SUM(poi.quantity_issued)
+                    FROM PackingOutwardItems poi
+                    WHERE poi.material_type = 'Sutli'
+                ), 0)
+                AS available_qty
+            FROM PMSutliGroups sg
+            JOIN PackingMaterialItems pmi ON pmi.id = sg.item_id
+            WHERE pmi.material_type = 'Sutli'
+        """)
+        row = c.fetchone()
+        if row and float(row[0]) > 0:
+            results.append({
+                "material_type": "Sutli",
+                "sub_label": "",
+                "unit": "bundles",
+                "available_qty": round(float(row[0]), 2),
+            })
+
+        return results
+    finally:
+        conn.close()
+
+
 @router.get("/{inward_id}", response_model=PackingMaterialDetail)
 def get_packing(inward_id: int, current_user: dict = Depends(get_current_user)):
     return _fetch_detail(inward_id)

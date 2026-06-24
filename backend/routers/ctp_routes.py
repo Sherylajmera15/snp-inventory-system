@@ -323,6 +323,41 @@ def export_ctp(
     return [_fetch_detail(eid) for eid in ids]
 
 
+@router.get("/stock")
+def get_ctp_stock(current_user: dict = Depends(get_current_user)):
+    """Live CTP plate stock grouped by plate_size."""
+    conn = get_connection()
+    try:
+        c = conn.cursor()
+        c.execute("""
+            SELECT
+                cs.plate_size,
+                COALESCE(SUM(cs.total_plates), 0)
+                + COALESCE((
+                    SELECT SUM(adj.quantity)
+                    FROM CTPAdjustmentEntries adj
+                    WHERE adj.plate_size = cs.plate_size
+                ), 0)
+                - COALESCE((
+                    SELECT SUM(oi.quantity_issued)
+                    FROM CTPOutwardItems oi
+                    WHERE oi.plate_size = cs.plate_size
+                ), 0)
+                AS available_plates
+            FROM CTPPlateSizes cs
+            GROUP BY cs.plate_size
+            ORDER BY cs.plate_size
+        """)
+        rows = c.fetchall()
+        return [
+            {"plate_size": r[0], "available_plates": int(r[1])}
+            for r in rows
+            if float(r[1]) > 0
+        ]
+    finally:
+        conn.close()
+
+
 @router.get("/{ctp_id}", response_model=CTPInwardDetail)
 def get_ctp(ctp_id: int, current_user: dict = Depends(get_current_user)):
     return _fetch_detail(ctp_id)

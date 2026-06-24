@@ -158,7 +158,7 @@ export default function LaminationListPage() {
                     <th className="px-5 py-3 font-medium">Supplier</th>
                     <th className="px-5 py-3 font-medium">Invoice</th>
                     <th className="px-5 py-3 font-medium">Film Type</th>
-                    <th className="px-5 py-3 font-medium">Size (mm)</th>
+                    <th className="px-5 py-3 font-medium">Roll Size</th>
                     <th className="px-5 py-3 font-medium">Rolls</th>
                     <th className="px-5 py-3 font-medium">Total Wt (kg)</th>
                     <th className="px-5 py-3 font-medium">Received By</th>
@@ -185,11 +185,7 @@ export default function LaminationListPage() {
                           {filmTypeLabel(entry.film_type, entry.custom_type)}
                         </span>
                       </td>
-                      <td className="px-5 py-3 text-charcoal">
-                        {(entry.film_length || entry.film_width)
-                          ? `${entry.film_length ?? "?"}×${entry.film_width ?? "?"}`
-                          : "—"}
-                      </td>
+                      <td className="px-5 py-3 text-charcoal">{entry.roll_size || "—"}</td>
                       <td className="px-5 py-3">
                         <div className="flex items-center gap-1.5 flex-wrap">
                           <span className="font-semibold text-charcoal">{entry.roll_count}</span>

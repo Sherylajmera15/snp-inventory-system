@@ -11,7 +11,7 @@ import SimpleAnalytics from "@/components/analytics/SimpleAnalytics";
 import { exportOil } from "@/lib/exportUtils";
 import api from "@/lib/api";
 import { OilInwardListItem } from "@/types/oil";
-import { Download, Plus, Search } from "lucide-react";
+import { Download, LayoutDashboard, Plus, Search } from "lucide-react";
 
 export default function OilListPage() {
   const { user, loading } = useAuth();
@@ -71,6 +71,10 @@ export default function OilListPage() {
             <p className="text-sm text-taupe">All recorded oil and lubrication inward transactions.</p>
           </div>
           <div className="flex items-center gap-2">
+            <Link href="/oil/dashboard"
+              className="inline-flex items-center gap-2 border border-sand bg-white text-charcoal rounded-lg px-4 py-2.5 text-sm font-medium hover:bg-cream transition-colors">
+              <LayoutDashboard size={15} />Dashboard
+            </Link>
             <button onClick={() => setExportOpen(true)}
               className="inline-flex items-center gap-2 border border-sand bg-white text-charcoal rounded-lg px-4 py-2.5 text-sm font-medium hover:bg-cream transition-colors">
               <Download size={15} />Export

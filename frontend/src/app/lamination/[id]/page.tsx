@@ -36,8 +36,7 @@ interface EditState {
   remarks: string;
   film_type: string;
   custom_type: string;
-  film_length: string;
-  film_width: string;
+  roll_size: string;
 }
 
 function filmTypeLabel(film_type: string, custom_type?: string | null) {
@@ -100,8 +99,7 @@ export default function LaminationDetailPage() {
       remarks: entry.remarks || "",
       film_type: entry.film_type,
       custom_type: entry.custom_type || "",
-      film_length: entry.film_length != null ? String(entry.film_length) : "",
-      film_width: entry.film_width != null ? String(entry.film_width) : "",
+      roll_size: entry.roll_size ?? "",
     });
     setEditMode(true);
   }
@@ -130,8 +128,7 @@ export default function LaminationDetailPage() {
         remarks: editData.remarks.trim() || null,
         film_type: editData.film_type,
         custom_type: editData.film_type === "OTHER" ? editData.custom_type.trim() : null,
-        film_length: editData.film_length ? Number(editData.film_length) : null,
-        film_width: editData.film_width ? Number(editData.film_width) : null,
+        roll_size: editData.roll_size.trim() || null,
       });
       setEntry({ ...entry, ...res.data });
       setEditMode(false);
@@ -286,19 +283,17 @@ export default function LaminationDetailPage() {
                     className={inputClass} />
                 </div>
               )}
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-xs font-medium text-taupe mb-1">Film Length (mm)</label>
-                  <input type="number" value={editData.film_length}
-                    onChange={(e) => setEditData({ ...editData, film_length: e.target.value })}
-                    onWheel={(e) => e.currentTarget.blur()} className={inputClass} />
-                </div>
-                <div>
-                  <label className="block text-xs font-medium text-taupe mb-1">Film Width (mm)</label>
-                  <input type="number" value={editData.film_width}
-                    onChange={(e) => setEditData({ ...editData, film_width: e.target.value })}
-                    onWheel={(e) => e.currentTarget.blur()} className={inputClass} />
-                </div>
+              <div>
+                <label className="block text-xs font-medium text-taupe mb-1">Roll Size</label>
+                <input type="text" value={editData.roll_size}
+                  onChange={(e) => setEditData({ ...editData, roll_size: e.target.value })}
+                  className={inputClass}
+                  placeholder="e.g. 12 inch, 18 inch, 24 inch"
+                  list="roll-size-list-edit"
+                  autoComplete="off" />
+                <datalist id="roll-size-list-edit">
+                  {["12 inch","18 inch","24 inch","30 inch","36 inch","42 inch","48 inch"].map(s => <option key={s} value={s} />)}
+                </datalist>
               </div>
               <div>
                 <label className="block text-xs font-medium text-taupe mb-1">Remarks</label>
@@ -314,16 +309,15 @@ export default function LaminationDetailPage() {
                 <span className={`inline-block text-xs font-semibold px-2.5 py-1 rounded-full ${filmTypeBadgeClass(entry.film_type)}`}>
                   {filmTypeLabel(entry.film_type, entry.custom_type)}
                 </span>
-                {(entry.film_length || entry.film_width) && (
-                  <span className="text-xs text-taupe">
-                    {entry.film_length ?? "?"}×{entry.film_width ?? "?"} mm
-                  </span>
+                {entry.roll_size && (
+                  <span className="text-xs text-taupe">{entry.roll_size}</span>
                 )}
               </div>
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                 <Field label="Supplier" value={entry.supplier_name} />
                 <Field label="Invoice Number" value={entry.invoice_number} />
                 <Field label="Received By" value={entry.received_by} />
+                <Field label="Roll Size" value={entry.roll_size || undefined} />
                 <Field label="Created By" value={entry.created_by_name} />
                 {entry.remarks && (
                   <div className="col-span-2 sm:col-span-3 bg-cream/60 border border-sand rounded-xl px-4 py-3">

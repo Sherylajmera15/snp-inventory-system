@@ -183,10 +183,8 @@ export default function LaminationOutwardDetailPage() {
             <span className="inline-block text-xs font-semibold px-2.5 py-1 rounded-full bg-rust/10 text-rust border border-rust/20">
               {filmTypeLabel(entry.film_type, entry.custom_type)}
             </span>
-            {(entry.film_length || entry.film_width) && (
-              <span className="text-xs text-taupe">
-                {entry.film_length ?? "?"}×{entry.film_width ?? "?"} mm
-              </span>
+            {entry.roll_size && (
+              <span className="text-xs text-taupe">{entry.roll_size}</span>
             )}
             <span className="text-xs font-semibold text-charcoal ml-auto">
               {entry.quantity_issued.toFixed(3)} kg issued

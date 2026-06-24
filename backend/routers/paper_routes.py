@@ -449,6 +449,107 @@ def export_paper(
     return [_fetch_detail(eid) for eid in ids]
 
 
+@router.get("/stock")
+def get_paper_stock(current_user: dict = Depends(get_current_user)):
+    """Live stock: reels (kg) and sheets (count) grouped by quality/gsm/size."""
+    conn = get_connection()
+    try:
+        c = conn.cursor()
+
+        # Reel stock grouped by quality, gsm, reel_width
+        c.execute("""
+            SELECT
+                pi.quality,
+                pi.gsm,
+                pi.reel_width,
+                COALESCE(SUM(pirw.weight), 0)
+                + COALESCE((
+                    SELECT SUM(adj.quantity)
+                    FROM PaperAdjustmentEntries adj
+                    WHERE adj.quality = pi.quality AND adj.gsm = pi.gsm
+                      AND adj.form_type = 'Reel Form'
+                      AND (adj.reel_width = pi.reel_width OR adj.reel_width IS NULL)
+                ), 0)
+                - COALESCE((
+                    SELECT SUM(poi.weight_issued)
+                    FROM PaperOutwardItems poi
+                    WHERE poi.quality = pi.quality AND poi.gsm = pi.gsm
+                      AND poi.form_type = 'Reel Form'
+                      AND poi.weight_issued IS NOT NULL
+                      AND (poi.reel_width = pi.reel_width OR poi.reel_width IS NULL)
+                ), 0)
+                AS available_kg
+            FROM PaperItems pi
+            JOIN PaperItemReelWeights pirw ON pirw.paper_item_id = pi.id
+            WHERE pi.form_type = 'Reel Form'
+            GROUP BY pi.quality, pi.gsm, pi.reel_width
+            ORDER BY pi.quality, pi.gsm, pi.reel_width
+        """)
+        reel_rows = c.fetchall()
+        reels = [
+            {
+                "quality": r[0],
+                "gsm": r[1],
+                "reel_width": r[2],
+                "available_kg": round(float(r[3]), 2),
+            }
+            for r in reel_rows
+            if float(r[3]) > 0
+        ]
+
+        # Sheet stock grouped by quality, gsm, sheet_length, sheet_width
+        c.execute("""
+            SELECT
+                pi.quality,
+                pi.gsm,
+                pi.sheet_length,
+                pi.sheet_width,
+                COALESCE(SUM(pi.total_sheets), 0)
+                + COALESCE((
+                    SELECT SUM(adj.quantity)
+                    FROM PaperAdjustmentEntries adj
+                    WHERE adj.quality = pi.quality AND adj.gsm = pi.gsm
+                      AND adj.form_type = 'Sheet Form'
+                      AND (
+                          (adj.sheet_length = pi.sheet_length AND adj.sheet_width = pi.sheet_width)
+                          OR (adj.sheet_length IS NULL AND adj.sheet_width IS NULL)
+                      )
+                ), 0)
+                - COALESCE((
+                    SELECT SUM(poi.sheets_issued)
+                    FROM PaperOutwardItems poi
+                    WHERE poi.quality = pi.quality AND poi.gsm = pi.gsm
+                      AND poi.form_type = 'Sheet Form'
+                      AND poi.sheets_issued IS NOT NULL
+                      AND (
+                          (poi.sheet_length = pi.sheet_length AND poi.sheet_width = pi.sheet_width)
+                          OR (poi.sheet_length IS NULL AND poi.sheet_width IS NULL)
+                      )
+                ), 0)
+                AS available_sheets
+            FROM PaperItems pi
+            WHERE pi.form_type = 'Sheet Form' AND pi.total_sheets IS NOT NULL
+            GROUP BY pi.quality, pi.gsm, pi.sheet_length, pi.sheet_width
+            ORDER BY pi.quality, pi.gsm
+        """)
+        sheet_rows = c.fetchall()
+        sheets = [
+            {
+                "quality": r[0],
+                "gsm": r[1],
+                "sheet_length": r[2],
+                "sheet_width": r[3],
+                "available_sheets": int(r[4]),
+            }
+            for r in sheet_rows
+            if float(r[4]) > 0
+        ]
+
+        return {"reels": reels, "sheets": sheets}
+    finally:
+        conn.close()
+
+
 @router.get("/{inward_id}", response_model=PaperInwardDetail)
 def get_paper(inward_id: int, current_user: dict = Depends(get_current_user)):
     return _fetch_detail(inward_id)

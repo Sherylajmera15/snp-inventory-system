@@ -39,8 +39,7 @@ export default function LaminationOutwardNewPage() {
   const [issuedByOther, setIssuedByOther] = useState("");
   const [filmType, setFilmType] = useState<LaminationFilmType | "">("");
   const [customType, setCustomType] = useState("");
-  const [filmLength, setFilmLength] = useState("");
-  const [filmWidth, setFilmWidth] = useState("");
+  const [rollSize, setRollSize] = useState("");
   const [quantityIssued, setQuantityIssued] = useState("");
   const [remarks, setRemarks] = useState("");
 
@@ -62,12 +61,11 @@ export default function LaminationOutwardNewPage() {
       .finally(() => setStockLoading(false));
   }, [user]);
 
-  // Filter stock to matching film type and optional size
+  // Filter stock to matching film type and optional roll size
   const filteredStock = stock.filter((s) => {
     if (!filmType || s.film_type !== filmType) return false;
     if (filmType === "OTHER" && customType && s.custom_type !== customType) return false;
-    if (filmLength && s.film_length !== Number(filmLength)) return false;
-    if (filmWidth && s.film_width !== Number(filmWidth)) return false;
+    if (rollSize && s.roll_size !== rollSize) return false;
     return true;
   });
 
@@ -82,8 +80,7 @@ export default function LaminationOutwardNewPage() {
       issued_by: finalIssuedBy || null,
       film_type: filmType,
       custom_type: filmType === "OTHER" ? customType.trim() || null : null,
-      film_length: filmLength ? Number(filmLength) : null,
-      film_width: filmWidth ? Number(filmWidth) : null,
+      roll_size: rollSize.trim() || null,
       quantity_issued: Number(quantityIssued),
       remarks: remarks.trim() || null,
       force_adjustment: forceAdjustment,
@@ -144,9 +141,7 @@ export default function LaminationOutwardNewPage() {
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
               {stock.map((s, idx) => {
                 const label = s.film_type === "OTHER" && s.custom_type ? s.custom_type : s.film_type;
-                const dims = (s.film_length || s.film_width)
-                  ? `${s.film_length ?? "?"}×${s.film_width ?? "?"} mm`
-                  : "No size";
+                const dims = s.roll_size || "No size";
                 return (
                   <div
                     key={idx}
@@ -253,29 +248,20 @@ export default function LaminationOutwardNewPage() {
             </div>
           )}
 
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className={labelClass}>Film Length (mm) <span className="text-taupe">(optional)</span></label>
-              <input
-                type="number"
-                value={filmLength}
-                onChange={(e) => setFilmLength(e.target.value)}
-                onWheel={(e) => e.currentTarget.blur()}
-                className={inputClass}
-                placeholder="e.g. 3000"
-              />
-            </div>
-            <div>
-              <label className={labelClass}>Film Width (mm) <span className="text-taupe">(optional)</span></label>
-              <input
-                type="number"
-                value={filmWidth}
-                onChange={(e) => setFilmWidth(e.target.value)}
-                onWheel={(e) => e.currentTarget.blur()}
-                className={inputClass}
-                placeholder="e.g. 1000"
-              />
-            </div>
+          <div>
+            <label className={labelClass}>Roll Size <span className="text-taupe text-xs">(optional)</span></label>
+            <input
+              type="text"
+              value={rollSize}
+              onChange={(e) => setRollSize(e.target.value)}
+              className={inputClass}
+              placeholder="e.g. 12 inch, 18 inch, 24 inch"
+              list="roll-size-list"
+              autoComplete="off"
+            />
+            <datalist id="roll-size-list">
+              {["12 inch","18 inch","24 inch","30 inch","36 inch","42 inch","48 inch"].map(s => <option key={s} value={s} />)}
+            </datalist>
           </div>
 
           {/* Available stock for selection */}

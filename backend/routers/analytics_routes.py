@@ -479,7 +479,7 @@ def global_search(
 
     # Lamination Film
     c.execute("""
-        SELECT i.id, i.inward_date, i.supplier_name, i.film_type, i.custom_type, i.film_length, i.film_width
+        SELECT i.id, i.inward_date, i.supplier_name, i.film_type, i.custom_type, i.roll_size
         FROM laminationfilminward i
         WHERE i.supplier_name ILIKE %s OR i.invoice_number ILIKE %s
            OR i.film_type ILIKE %s OR i.custom_type ILIKE %s OR i.remarks ILIKE %s
@@ -488,7 +488,7 @@ def global_search(
     """, (like, like, like, like, like, like))
     for row in c.fetchall():
         type_str = row[4] if row[4] else row[3]
-        size_str = f"{row[5]}×{row[6]}" if row[5] and row[6] else ""
+        size_str = row[5] if row[5] else ""
         desc = " · ".join(filter(None, [type_str, size_str]))
         add("Lamination Film", row[0], row[1], row[2], desc, f"/lamination/{row[0]}")
 

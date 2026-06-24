@@ -156,7 +156,7 @@ export default function LaminationDashboardPage() {
                     <thead>
                       <tr className="bg-cream text-taupe text-xs uppercase tracking-wide">
                         <th className="px-5 py-3 text-left font-medium">Film Type</th>
-                        <th className="px-5 py-3 text-left font-medium">Size (L×W mm)</th>
+                        <th className="px-5 py-3 text-left font-medium">Roll Size</th>
                         <th className="px-5 py-3 text-right font-medium">Rolls</th>
                         <th className="px-5 py-3 text-right font-medium">Remaining Wt (kg)</th>
                       </tr>
@@ -169,11 +169,7 @@ export default function LaminationDashboardPage() {
                               {stockLabel(item)}
                             </span>
                           </td>
-                          <td className="px-5 py-3 text-charcoal">
-                            {(item.film_length || item.film_width)
-                              ? `${item.film_length ?? "?"}×${item.film_width ?? "?"}`
-                              : "—"}
-                          </td>
+                          <td className="px-5 py-3 text-charcoal">{item.roll_size || "—"}</td>
                           <td className={`px-5 py-3 text-right font-bold ${item.roll_count > 0 ? "text-charcoal" : "text-taupe"}`}>
                             {item.roll_count}
                           </td>

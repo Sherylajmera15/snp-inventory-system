@@ -141,7 +141,7 @@ export default function LaminationOutwardListPage() {
                     <th className="px-5 py-3 font-medium">Receiver</th>
                     <th className="px-5 py-3 font-medium">Issued By</th>
                     <th className="px-5 py-3 font-medium">Film Type</th>
-                    <th className="px-5 py-3 font-medium">Size (mm)</th>
+                    <th className="px-5 py-3 font-medium">Roll Size</th>
                     <th className="px-5 py-3 font-medium">Wt Issued (kg)</th>
                     <th className="px-5 py-3 font-medium">Remarks</th>
                   </tr>
@@ -166,11 +166,7 @@ export default function LaminationOutwardListPage() {
                           {filmTypeLabel(entry.film_type, entry.custom_type)}
                         </span>
                       </td>
-                      <td className="px-5 py-3 text-charcoal">
-                        {(entry.film_length || entry.film_width)
-                          ? `${entry.film_length ?? "?"}×${entry.film_width ?? "?"}`
-                          : "—"}
-                      </td>
+                      <td className="px-5 py-3 text-charcoal">{entry.roll_size || "—"}</td>
                       <td className="px-5 py-3 text-charcoal font-semibold">{entry.quantity_issued.toFixed(3)}</td>
                       <td className="px-5 py-3 text-taupe truncate max-w-32">{entry.remarks || "—"}</td>
                     </tr>

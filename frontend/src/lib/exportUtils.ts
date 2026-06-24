@@ -959,8 +959,7 @@ export interface LaminationExportEntry {
   received_by: unknown;
   film_type: unknown;
   custom_type?: unknown;
-  film_length?: unknown;
-  film_width?: unknown;
+  roll_size?: unknown;
   remarks?: unknown;
   rolls?: { roll_number: unknown; original_weight: unknown; remaining_weight: unknown; is_consumed: unknown }[];
 }
@@ -983,8 +982,7 @@ export function exportLaminationInward(entries: LaminationExportEntry[], format:
       "Invoice": s(e.invoice_number),
       "Received By": s(e.received_by),
       "Film Type": e.film_type === "OTHER" && e.custom_type ? s(e.custom_type) : s(e.film_type),
-      "Length (mm)": e.film_length != null ? s(e.film_length) : "",
-      "Width (mm)": e.film_width != null ? s(e.film_width) : "",
+      "Roll Size": s(e.roll_size),
       "No. of Rolls": String(rolls.length),
     };
     // Individual roll weight columns — filled only for entries with ≤5 rolls

@@ -11,7 +11,7 @@ import DiesAnalytics from "@/components/analytics/DiesAnalytics";
 import { exportDies } from "@/lib/exportUtils";
 import api from "@/lib/api";
 import { DiesInwardListItem, DieItemSearchResult } from "@/types/dies";
-import { Download, Plus, Search } from "lucide-react";
+import { Download, LayoutDashboard, Plus, Search } from "lucide-react";
 
 const STATUS_OPTIONS = ["All", "Active", "Discontinued"];
 
@@ -134,6 +134,10 @@ export default function DiesListPage() {
                 : `${resultCount} entr${resultCount === 1 ? "y" : "ies"}`}
           </p>
           <div className="flex items-center gap-2">
+            <Link href="/dies/dashboard"
+              className="inline-flex items-center gap-2 border border-sand bg-white text-charcoal rounded-lg px-4 py-2 text-sm font-medium hover:bg-cream transition-colors">
+              <LayoutDashboard size={15} />Dashboard
+            </Link>
             <button onClick={() => setExportOpen(true)}
               className="inline-flex items-center gap-2 border border-sand bg-white text-charcoal rounded-lg px-4 py-2 text-sm font-medium hover:bg-cream transition-colors">
               <Download size={15} />Export

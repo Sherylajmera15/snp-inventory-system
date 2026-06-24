@@ -11,7 +11,7 @@ import ItemSummaries from "@/components/ItemSummaries";
 import ExportModal from "@/components/ExportModal";
 import PaperAnalytics from "@/components/analytics/PaperAnalytics";
 import { exportPaper } from "@/lib/exportUtils";
-import { Download, Plus, Search } from "lucide-react";
+import { Download, LayoutDashboard, Plus, Search } from "lucide-react";
 
 export default function PaperListPage() {
   const { user, loading } = useAuth();
@@ -82,6 +82,12 @@ export default function PaperListPage() {
             <p className="text-sm text-taupe">All recorded paper inward transactions.</p>
           </div>
           <div className="flex items-center gap-2">
+            <Link
+              href="/paper/dashboard"
+              className="inline-flex items-center gap-2 border border-sand bg-white text-charcoal rounded-lg px-4 py-2.5 text-sm font-medium hover:bg-cream transition-colors"
+            >
+              <LayoutDashboard size={15} />Dashboard
+            </Link>
             <button
               onClick={() => setExportOpen(true)}
               className="inline-flex items-center gap-2 border border-sand bg-white text-charcoal rounded-lg px-4 py-2.5 text-sm font-medium hover:bg-cream transition-colors"

@@ -354,6 +354,43 @@ def export_chemicals(
     return [_fetch_detail(eid) for eid in ids]
 
 
+@router.get("/stock")
+def get_chemical_stock(current_user: dict = Depends(get_current_user)):
+    """Live chemical stock grouped by chemical_name and unit."""
+    conn = get_connection()
+    try:
+        c = conn.cursor()
+        c.execute("""
+            SELECT
+                i.chemical_name,
+                qg.unit,
+                COALESCE(SUM(qg.group_quantity), 0)
+                + COALESCE((
+                    SELECT SUM(adj.quantity)
+                    FROM ChemicalAdjustmentEntries adj
+                    WHERE adj.item_name = i.chemical_name AND adj.unit = qg.unit
+                ), 0)
+                - COALESCE((
+                    SELECT SUM(oi.quantity_issued)
+                    FROM ChemicalOutwardItems oi
+                    WHERE oi.item_name = i.chemical_name AND oi.unit = qg.unit
+                ), 0)
+                AS available_qty
+            FROM ChemicalItems i
+            JOIN ChemicalQuantityGroups qg ON qg.item_id = i.id
+            GROUP BY i.chemical_name, qg.unit
+            ORDER BY i.chemical_name, qg.unit
+        """)
+        rows = c.fetchall()
+        return [
+            {"item_name": r[0], "unit": r[1], "available_qty": round(float(r[2]), 2)}
+            for r in rows
+            if float(r[2]) > 0
+        ]
+    finally:
+        conn.close()
+
+
 @router.get("/{inward_id}", response_model=ChemicalInwardDetail)
 def get_chemical(inward_id: int, current_user: dict = Depends(get_current_user)):
     return _fetch_detail(inward_id)
